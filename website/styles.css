@@ -121,6 +121,24 @@ a:hover {
   margin-inline: auto;
 }
 
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 30;
+  pointer-events: none;
+  background: transparent;
+}
+
+.scroll-progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -128,6 +146,16 @@ a:hover {
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
+  transition: box-shadow 0.3s ease;
+}
+
+.site-header.is-scrolled {
+  box-shadow: var(--shadow);
+}
+
+.nav-row a[aria-current="location"] {
+  text-decoration-thickness: 2px;
+  color: var(--accent);
 }
 
 .header-bar,
@@ -547,6 +575,257 @@ h3 {
   .steps {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .bench {
+    grid-template-columns: minmax(16rem, 0.9fr) 1.1fr;
+    align-items: center;
+  }
+
+  .bench-controls {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    align-self: center;
+  }
+
+  .pair,
+  #touch-hint,
+  .warmth,
+  .dock { grid-column: 2; }
+}
+
+.control-label {
+  margin: 0 0 0.4rem;
+  font-weight: 650;
+}
+
+.bench {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  padding: 1.1rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.bench-controls {
+  display: grid;
+  gap: 1rem;
+}
+
+.swatches,
+.who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.swatch,
+.who-btn,
+.dock,
+.pebble-btn {
+  font: inherit;
+  cursor: pointer;
+}
+
+.swatch,
+.who-btn {
+  min-height: 44px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  padding: 0.4rem 0.85rem;
+  color: #241f1b;
+}
+
+.swatch[data-colour="#e08a45"] { background: #e08a45; }
+.swatch[data-colour="#e08b78"] { background: #e08b78; }
+.swatch[data-colour="#6f9a62"] { background: #6f9a62; }
+.swatch[data-colour="#7f8cae"] { background: #7f8cae; }
+
+.who-btn {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.swatch.is-selected,
+.who-btn.is-selected {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.quiet {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  font-weight: 650;
+}
+
+.quiet input {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.pair.is-sending::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 38%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--glow-colour, var(--accent));
+  transform-origin: left center;
+  animation: signal 0.7s ease;
+}
+
+@keyframes signal {
+  from { transform: scaleX(0); opacity: 1; }
+  to { transform: scaleX(1); opacity: 0.2; }
+}
+
+.pebble-btn {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 0.85rem 0.4rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--ink);
+  touch-action: manipulation;
+}
+
+.pebble-btn.is-pressing .pebble-stone {
+  transform: scale(0.94);
+}
+
+.pebble-stone {
+  width: 104px;
+  height: 76px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 246, 234, 0.9), transparent 36%),
+    radial-gradient(circle at 40% 40%, #d9cbbd, #8d7568 72%);
+  box-shadow: 0 12px 24px rgba(70, 42, 24, 0.16);
+  transition: transform 0.2s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.pebble-btn.is-lit .pebble-stone {
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.85), transparent 34%),
+    radial-gradient(circle at 42% 42%, #fff4e4, var(--glow-colour, #e08a45) 46%, #6a3b28 78%);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--glow-colour, #e08a45) 28%, transparent), 0 0 32px var(--glow-colour, #e08a45);
+}
+
+.pebble-btn.is-warm .pebble-stone {
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, #e7a15a 35%, transparent),
+    0 0 42px #e08a45,
+    inset 0 -12px 18px rgba(196, 90, 40, 0.35);
+}
+
+.pebble-name {
+  font-weight: 650;
+}
+
+.warmth-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+#warmth-fill {
+  display: block;
+  height: 100%;
+  width: 8%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #e7c39a, #e08a45 55%, #c2410c);
+  transition: width 0.7s ease;
+}
+
+#warmth-fill.is-tap { width: 48%; }
+#warmth-fill.is-hug { width: 100%; }
+
+#touch-status {
+  margin: 0.55rem 0 0;
+}
+
+.dock {
+  appearance: none;
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  min-height: 48px;
+  padding: 0.7rem;
+  border-radius: 18px;
+  border: 1px dashed var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.dock-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 6px solid var(--line);
+  box-shadow: inset 0 0 0 10px var(--bg);
+}
+
+.dock.is-charging .dock-ring {
+  border-color: transparent;
+  background:
+    conic-gradient(from 0deg, var(--glow-colour, #e08a45), #fff6ea, var(--glow-colour, #e08a45));
+  animation: spin 1.4s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.js-motion .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.js-motion .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.js-motion .features .reveal:nth-child(2),
+.js-motion .steps .reveal:nth-child(2) { transition-delay: 0.08s; }
+.js-motion .features .reveal:nth-child(3),
+.js-motion .steps .reveal:nth-child(3) { transition-delay: 0.16s; }
+.js-motion .features .reveal:nth-child(4) { transition-delay: 0.24s; }
+.js-motion .features .reveal:nth-child(5) { transition-delay: 0.32s; }
+.js-motion .features .reveal:nth-child(6) { transition-delay: 0.4s; }
+
+@media (hover: hover) {
+  .feature,
+  .steps li,
+  .release-list a {
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+
+  .feature:hover,
+  .steps li:hover,
+  .release-list a:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -555,7 +834,23 @@ h3 {
   }
 
   .glow-a,
-  .glow-b {
+  .glow-b,
+  .dock.is-charging .dock-ring,
+  .pair.is-sending::after {
     animation: none;
+  }
+
+  .pebble-stone,
+  #warmth-fill,
+  .feature,
+  .steps li,
+  .release-list a,
+  .site-header {
+    transition: none;
+  }
+
+  .feature:hover,
+  .steps li:hover {
+    transform: none;
   }
 }

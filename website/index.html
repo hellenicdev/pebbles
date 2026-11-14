@@ -46,6 +46,7 @@
       <button type="button" class="theme-toggle" id="theme-toggle" hidden>Use dark colours</button>
     </div>
     <nav class="wrap nav-row" aria-label="On this page">
+      <a href="#try">Try it</a>
       <a href="#how">How it works</a>
       <a href="#features">Features</a>
       <a href="#faq">FAQ</a>
@@ -107,20 +108,73 @@
       </div>
     </div>
 
+    <section class="section try" id="try">
+      <div class="wrap">
+        <h2 id="try-title">Try a touch</h2>
+        <p class="section-intro">A pretend pair, in your browser. Nothing leaves this page.</p>
+        <div class="bench">
+          <div class="bench-controls">
+            <div>
+              <p id="colour-label" class="control-label">Your colour</p>
+              <div class="swatches" role="radiogroup" aria-labelledby="colour-label">
+                <button type="button" class="swatch is-selected" role="radio" aria-checked="true" data-colour="#e08a45">Amber</button>
+                <button type="button" class="swatch" role="radio" aria-checked="false" data-colour="#e08b78">Rose</button>
+                <button type="button" class="swatch" role="radio" aria-checked="false" data-colour="#6f9a62">Sage</button>
+                <button type="button" class="swatch" role="radio" aria-checked="false" data-colour="#7f8cae">Dusk</button>
+              </div>
+            </div>
+            <div>
+              <p id="who-label" class="control-label">Who it’s for</p>
+              <div class="who" role="radiogroup" aria-labelledby="who-label">
+                <button type="button" class="who-btn is-selected" role="radio" aria-checked="true">Sam</button>
+                <button type="button" class="who-btn" role="radio" aria-checked="false">Noor</button>
+                <button type="button" class="who-btn" role="radio" aria-checked="false">Alex</button>
+                <button type="button" class="who-btn" role="radio" aria-checked="false">Jo</button>
+                <button type="button" class="who-btn" role="radio" aria-checked="false">Ren</button>
+              </div>
+            </div>
+            <label class="quiet" for="quiet-hours">
+              <input id="quiet-hours" type="checkbox">
+              Quiet hours
+            </label>
+          </div>
+          <div class="pair" id="pair">
+            <button type="button" class="pebble-btn" id="pebble-you" aria-describedby="touch-hint">
+              <span class="pebble-stone" aria-hidden="true"></span>
+              <span class="pebble-name">Yours</span>
+            </button>
+            <button type="button" class="pebble-btn" id="pebble-them">
+              <span class="pebble-stone" aria-hidden="true"></span>
+              <span class="pebble-name" id="them-name">Sam</span>
+            </button>
+          </div>
+          <p id="touch-hint" class="fine">Tap yours for “thinking of you”. Hold for a hug. Tap theirs to answer “got it”.</p>
+          <div class="warmth">
+            <div class="warmth-track" aria-hidden="true"><span id="warmth-fill"></span></div>
+            <p id="touch-status" role="status" aria-live="polite">Tap yours, or hold for a hug.</p>
+          </div>
+          <button type="button" class="dock" id="dock">
+            <span class="dock-ring" aria-hidden="true"></span>
+            Set yours on the dock
+          </button>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="how">
       <div class="wrap">
-        <h2>How it works</h2>
-        <p class="section-intro">No threads. No history. A touch, and the person you mean feels it.</p>
+        <h2 class="reveal">How it works</h2>
+        <p class="section-intro reveal">No threads. No history. A touch, and the person you mean feels it.</p>
         <ol class="steps">
-          <li>
+          <li class="reveal">
             <h3>Keep a small group</h3>
             <p>Pair up to five Pebbles. The people you actually want to reach.</p>
           </li>
-          <li>
+          <li class="reveal">
             <h3>Tap, or hold</h3>
             <p>A tap means “thinking of you”. A long hold is a hug.</p>
           </li>
-          <li>
+          <li class="reveal">
             <h3>They feel it</h3>
             <p>Theirs glows in your colour, warms gently, and chimes. A touch back means “got it”.</p>
           </li>
@@ -130,30 +184,30 @@
 
     <section class="section" id="features">
       <div class="wrap">
-        <h2>What a Pebble does</h2>
-        <p class="section-intro">A quiet object. Warmth, light, and a buzz — and nothing stored afterwards.</p>
+        <h2 class="reveal">What a Pebble does</h2>
+        <p class="section-intro reveal">A quiet object. Warmth, light, and a buzz — and nothing stored afterwards.</p>
         <ul class="features">
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Your colour</h3>
             <p>Their Pebble glows in the sender’s colour, so a touch has a face.</p>
           </li>
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Gentle warmth</h3>
             <p>A small heater, capped around 42°C. Warm in the hand, not hot.</p>
           </li>
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Buzz and chime</h3>
             <p>A haptic buzz and a soft chime. Easy to notice, easy to live with.</p>
           </li>
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Quiet hours</h3>
             <p>Choose when a Pebble stays still.</p>
           </li>
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Charging dock</h3>
             <p>Wireless charging, with an LED ring on the dock.</p>
           </li>
-          <li class="feature">
+          <li class="feature reveal">
             <h3>Private by design</h3>
             <p>Touches are end-to-end encrypted. There is no message history. Firmware, app, and server are open source.</p>
           </li>
@@ -163,7 +217,7 @@
 
     <section class="section" id="faq">
       <div class="wrap faq">
-        <h2>FAQ</h2>
+        <h2 class="reveal">FAQ</h2>
         <details>
           <summary>What is a Pebble?</summary>
           <p>A small device you keep nearby. Touch yours, and someone else’s lights up and warms. It is not a phone, and it does not carry a conversation.</p>
@@ -193,8 +247,8 @@
 
     <section class="section" id="build-log">
       <div class="wrap">
-        <h2>Build log</h2>
-        <p class="section-intro">The latest public releases from the Pebbles repository, loaded in your browser.</p>
+        <h2 class="reveal">Build log</h2>
+        <p class="section-intro reveal">The latest public releases from the Pebbles repository, loaded in your browser.</p>
         <p id="release-status" role="status">The build log loads from GitHub when JavaScript is available.</p>
         <noscript>
           <style>#release-status { display: none; }</style>
