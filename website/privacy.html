@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy — Pebbles</title>
+  <meta name="description" content="What Pebbles stores: your waitlist email in MailerLite, and nothing about the touches between Pebbles.">
+  <meta name="author" content="HellenicDev">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4efe8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://hellenicdev.eu/pebbles/privacy.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Privacy — Pebbles">
+  <meta property="og:description" content="What Pebbles stores: your waitlist email in MailerLite, and nothing about the touches between Pebbles.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hellenicdev.eu/pebbles/privacy.html">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Privacy — Pebbles">
+  <meta name="twitter:description" content="Waitlist emails live in MailerLite. Touches are end-to-end encrypted and are not stored.">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("pebbles-theme");
+        if (saved === "light" || saved === "dark") {
+          document.documentElement.setAttribute("data-theme", saved);
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-bar">
+      <a class="wordmark" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#f4efe8"/>
+          <ellipse cx="16" cy="18" rx="10" ry="7.5" fill="#e08a45"/>
+          <ellipse cx="12.5" cy="15.5" rx="4" ry="2.4" fill="#fff6ea" opacity="0.75"/>
+        </svg>
+        Pebbles
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" hidden>Use dark colours</button>
+    </div>
+    <nav class="wrap nav-row" aria-label="Site">
+      <a href="index.html#how">How it works</a>
+      <a href="index.html#features">Features</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="index.html#build-log">Build log</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+    </nav>
+  </header>
+
+  <main id="content" class="wrap page">
+    <h1>Privacy</h1>
+    <p>Pebbles is made by HellenicDev. This page says what we keep, in plain language. Last updated 14 November 2026.</p>
+
+    <h2>Waitlist</h2>
+    <p>If you join the waitlist, we send your email address to <a href="https://www.mailerlite.com/">MailerLite</a> and store it there, so we can write when there is news. We don’t ask for your name. We don’t sell the list. Each of those emails has MailerLite’s unsubscribe link. You can also ask us to remove you by opening an issue on GitHub.</p>
+    <p>The waitlist form talks to our endpoint at <code>api.hellenicdev.eu</code>, which passes the address on to MailerLite. That endpoint may count requests from your network address for about a minute, in memory, to slow down abuse. We don’t write that address down.</p>
+
+    <h2>Touches</h2>
+    <p>A touch — “thinking of you”, a hug, or “got it” — is end-to-end encrypted between Pebbles. The server does not keep a history of touches, and we can’t read them.</p>
+
+    <h2>Crash reports</h2>
+    <p>The app may offer anonymous crash reports. They stay off unless you opt in. They are for fixing faults, not for advertising, and they are not tied to your waitlist email.</p>
+
+    <h2>This website</h2>
+    <p>The site doesn’t use tracking cookies or analytics. Your theme choice, light or dark, stays in local storage on your device. Nothing else from a visit is stored by us.</p>
+
+    <h2>Contact</h2>
+    <p>Questions and requests go through GitHub: <a href="https://github.com/hellenicdev/pebbles">hellenicdev/pebbles</a>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Pebbles is open source. Firmware, app, and server.</p>
+      <ul class="footer-links">
+        <li><a href="https://github.com/hellenicdev/pebbles">GitHub</a></li>
+        <li><a href="index.html">Home</a></li>
+      </ul>
+      <p class="fine">© 2026 HellenicDev. MIT License.</p>
+    </div>
+  </footer>
+  <script src="site.js"></script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pebbles — a pocket-sized link between people who love each other</title>
+  <meta name="description" content="Pebbles is a pocket-sized link between people who love each other: one touch on your Pebble lights up and warms theirs, wherever in the world they are.">
+  <meta name="author" content="HellenicDev">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4efe8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://hellenicdev.eu/pebbles/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Pebbles">
+  <meta property="og:description" content="Pebbles is a pocket-sized link between people who love each other: one touch on your Pebble lights up and warms theirs, wherever in the world they are.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hellenicdev.eu/pebbles/">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Pebbles">
+  <meta name="twitter:description" content="One touch on your Pebble lights up and warms theirs, wherever in the world they are.">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("pebbles-theme");
+        if (saved === "light" || saved === "dark") {
+          document.documentElement.setAttribute("data-theme", saved);
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-bar">
+      <a class="wordmark" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#f4efe8"/>
+          <ellipse cx="16" cy="18" rx="10" ry="7.5" fill="#e08a45"/>
+          <ellipse cx="12.5" cy="15.5" rx="4" ry="2.4" fill="#fff6ea" opacity="0.75"/>
+        </svg>
+        Pebbles
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" hidden>Use dark colours</button>
+    </div>
+    <nav class="wrap nav-row" aria-label="On this page">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="#build-log">Build log</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+  </header>
+
+  <main id="content">
+    <div class="wrap hero">
+      <div>
+        <p class="eyebrow">For people you love</p>
+        <h1>A pocket-sized link between people who love each other.</h1>
+        <p class="lede">One touch on your Pebble lights up and warms theirs, wherever in the world they are.</p>
+        <form id="waitlist-form" class="hero-form">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="you@example.com">
+          <div class="hp" aria-hidden="true">
+            <label for="confirm">Leave this field empty</label>
+            <input id="confirm" name="confirm" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <button class="button" type="submit">Join the waitlist</button>
+          </div>
+          <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+          <p class="fine">We’ll only use this to write about Pebbles. <a href="privacy.html">Privacy policy</a>.</p>
+          <p class="when">Kickstarter is planned for 1 April 2027.</p>
+        </form>
+        <noscript>
+          <p>JavaScript is off, so this page can’t send the form. You can still reach us on <a href="https://github.com/hellenicdev/pebbles">GitHub</a>.</p>
+        </noscript>
+      </div>
+      <div class="stone-stage" aria-hidden="true">
+        <svg class="stones" viewBox="0 0 420 320">
+          <defs>
+            <radialGradient id="amber" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#ffe7c2"/>
+              <stop offset="48%" stop-color="#f0a15a"/>
+              <stop offset="100%" stop-color="#c46a32"/>
+            </radialGradient>
+            <radialGradient id="rose" cx="40%" cy="32%" r="75%">
+              <stop offset="0%" stop-color="#ffd9cf"/>
+              <stop offset="52%" stop-color="#e08b78"/>
+              <stop offset="100%" stop-color="#a85a52"/>
+            </radialGradient>
+            <radialGradient id="sage" cx="38%" cy="34%" r="75%">
+              <stop offset="0%" stop-color="#e7f0d8"/>
+              <stop offset="50%" stop-color="#8eae78"/>
+              <stop offset="100%" stop-color="#4f6b48"/>
+            </radialGradient>
+          </defs>
+          <ellipse class="glow-a" cx="200" cy="168" rx="150" ry="78"/>
+          <ellipse class="glow-b" cx="250" cy="150" rx="90" ry="48"/>
+          <ellipse cx="148" cy="196" rx="96" ry="70" fill="url(#sage)" transform="rotate(-16 148 196)"/>
+          <ellipse cx="276" cy="184" rx="104" ry="74" fill="url(#rose)" transform="rotate(14 276 184)"/>
+          <ellipse cx="206" cy="148" rx="112" ry="80" fill="url(#amber)" transform="rotate(-6 206 148)"/>
+          <ellipse cx="170" cy="122" rx="38" ry="16" fill="#fff" opacity="0.35" transform="rotate(-22 170 122)"/>
+        </svg>
+      </div>
+    </div>
+
+    <section class="section" id="how">
+      <div class="wrap">
+        <h2>How it works</h2>
+        <p class="section-intro">No threads. No history. A touch, and the person you mean feels it.</p>
+        <ol class="steps">
+          <li>
+            <h3>Keep a small group</h3>
+            <p>Pair up to five Pebbles. The people you actually want to reach.</p>
+          </li>
+          <li>
+            <h3>Tap, or hold</h3>
+            <p>A tap means “thinking of you”. A long hold is a hug.</p>
+          </li>
+          <li>
+            <h3>They feel it</h3>
+            <p>Theirs glows in your colour, warms gently, and chimes. A touch back means “got it”.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="wrap">
+        <h2>What a Pebble does</h2>
+        <p class="section-intro">A quiet object. Warmth, light, and a buzz — and nothing stored afterwards.</p>
+        <ul class="features">
+          <li class="feature">
+            <h3>Your colour</h3>
+            <p>Their Pebble glows in the sender’s colour, so a touch has a face.</p>
+          </li>
+          <li class="feature">
+            <h3>Gentle warmth</h3>
+            <p>A small heater, capped around 42°C. Warm in the hand, not hot.</p>
+          </li>
+          <li class="feature">
+            <h3>Buzz and chime</h3>
+            <p>A haptic buzz and a soft chime. Easy to notice, easy to live with.</p>
+          </li>
+          <li class="feature">
+            <h3>Quiet hours</h3>
+            <p>Choose when a Pebble stays still.</p>
+          </li>
+          <li class="feature">
+            <h3>Charging dock</h3>
+            <p>Wireless charging, with an LED ring on the dock.</p>
+          </li>
+          <li class="feature">
+            <h3>Private by design</h3>
+            <p>Touches are end-to-end encrypted. There is no message history. Firmware, app, and server are open source.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="wrap faq">
+        <h2>FAQ</h2>
+        <details>
+          <summary>What is a Pebble?</summary>
+          <p>A small device you keep nearby. Touch yours, and someone else’s lights up and warms. It is not a phone, and it does not carry a conversation.</p>
+        </details>
+        <details>
+          <summary>How many people can I reach?</summary>
+          <p>A group holds up to five Pebbles.</p>
+        </details>
+        <details>
+          <summary>What does a touch mean?</summary>
+          <p>A tap is “thinking of you”. A long hold is a hug. Touching back sends “got it”. That is the whole language.</p>
+        </details>
+        <details>
+          <summary>How warm does it get?</summary>
+          <p>The heater is capped around 42°C. It is meant to feel like a warm hand, and then stop.</p>
+        </details>
+        <details>
+          <summary>Can anyone read a touch?</summary>
+          <p>No. Touches are end-to-end encrypted, and the server does not keep them. There is no history to browse later.</p>
+        </details>
+        <details>
+          <summary>When can I get one?</summary>
+          <p>Kickstarter is planned for 1 April 2027. The waitlist is how we’ll tell you.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="section" id="build-log">
+      <div class="wrap">
+        <h2>Build log</h2>
+        <p class="section-intro">The latest public releases from the Pebbles repository, loaded in your browser.</p>
+        <p id="release-status" role="status">The build log loads from GitHub when JavaScript is available.</p>
+        <noscript>
+          <style>#release-status { display: none; }</style>
+          <p>JavaScript is off, so this page can’t fetch releases. <a href="https://github.com/hellenicdev/pebbles/releases">Read them on GitHub</a>.</p>
+        </noscript>
+        <ul id="release-list" class="release-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Pebbles is open source. Firmware, app, and server.</p>
+      <ul class="footer-links">
+        <li><a href="https://github.com/hellenicdev/pebbles">GitHub</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+      </ul>
+      <p class="fine">© 2026 HellenicDev. MIT License.</p>
+    </div>
+  </footer>
+  <script src="site.js"></script>
+</body>
+</html>
