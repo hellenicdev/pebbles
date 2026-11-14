@@ -1,1 +1,1 @@
-idf_component_register(SRCS "leds.c" INCLUDE_DIRS "include" REQUIRES board power led_strip)
+idf_component_register(SRCS "leds.c" INCLUDE_DIRS "include" REQUIRES board power led_strip esp_timer freertos)

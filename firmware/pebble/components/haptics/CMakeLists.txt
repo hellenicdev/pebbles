@@ -1,1 +1,1 @@
-idf_component_register(SRCS "haptics.c" INCLUDE_DIRS "include" REQUIRES board bus quiet)
+idf_component_register(SRCS "haptics.c" INCLUDE_DIRS "include" REQUIRES board bus quiet esp_timer)
