@@ -248,13 +248,17 @@
     <section class="section" id="build-log">
       <div class="wrap">
         <h2 class="reveal">Build log</h2>
-        <p class="section-intro reveal">The latest public releases from the Pebbles repository, loaded in your browser.</p>
+        <p class="section-intro reveal">Public releases and the latest commits, loaded in your browser.</p>
+        <h3>Releases</h3>
         <p id="release-status" role="status">The build log loads from GitHub when JavaScript is available.</p>
         <noscript>
-          <style>#release-status { display: none; }</style>
-          <p>JavaScript is off, so this page can’t fetch releases. <a href="https://github.com/hellenicdev/pebbles/releases">Read them on GitHub</a>.</p>
+          <style>#release-status, #commit-status { display: none; }</style>
+          <p>JavaScript is off, so this page can’t fetch the log. <a href="https://github.com/hellenicdev/pebbles/commits/main">Read the commits on GitHub</a>.</p>
         </noscript>
         <ul id="release-list" class="release-list"></ul>
+        <h3>Recent commits</h3>
+        <p id="commit-status" role="status"></p>
+        <ul id="commit-list" class="release-list"></ul>
       </div>
     </section>
   </main>

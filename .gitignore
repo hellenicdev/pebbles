@@ -20,3 +20,12 @@ firmware/dock/*.map
 firmware/dock/*.hex
 firmware/dock/*.lst
 firmware/dock/generated_*.ld
+
+# Android
+app/.gradle/
+app/build/
+app/pebble/build/
+local.properties
+*.jks
+*.keystore
+*.apk
