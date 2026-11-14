@@ -10,11 +10,11 @@ Kickstarter is planned for 1 April 2027. The public site is [https://hellenicdev
 
 | Path | What it is |
 | --- | --- |
-| `firmware/` | Device firmware. Not in this milestone. |
+| `firmware/` | Pebble (ESP-IDF) and dock (CH32V003) firmware. |
 | `app/` | Android app. Not in this milestone. |
 | `server/` | Backend. `server/waitlist/` is the Cloudflare Worker for the waitlist. |
 | `website/` | Static site deployed to GitHub Pages. |
-| `.github/workflows/` | Pages deploy and waitlist Worker deploy. |
+| `.github/workflows/` | Pages deploy, waitlist Worker deploy, and firmware builds. |
 
 ## Licence
 
