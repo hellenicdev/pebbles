@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "esp_err.h"
 
 typedef enum {
     LED_CTX_IDLE = 0,

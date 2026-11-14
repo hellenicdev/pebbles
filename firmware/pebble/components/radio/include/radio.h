@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include "esp_err.h"
 
 esp_err_t radio_init(void);
 bool radio_is_connected(void);

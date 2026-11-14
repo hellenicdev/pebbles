@@ -1,5 +1,7 @@
 #pragma once
 
+#include "esp_err.h"
+
 typedef enum {
     HAPTIC_TAP = 0,
     HAPTIC_HUG,

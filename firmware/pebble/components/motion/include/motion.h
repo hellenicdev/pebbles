@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include "esp_err.h"
 
 esp_err_t motion_init(void);
 bool motion_pickup(void);
