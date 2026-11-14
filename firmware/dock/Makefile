@@ -12,6 +12,9 @@ endif
 
 all : build
 
+# GCC 14 rejects csr instructions unless the zicsr extension is named.
+EXTRA_CFLAGS += -march=rv32ec_zicsr -mabi=ilp32e
+
 TARGET := dock
 TARGET_MCU := CH32V003
 
