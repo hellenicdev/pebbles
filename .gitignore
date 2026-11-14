@@ -9,3 +9,14 @@ dist/
 Thumbs.db
 *.log
 *.tsbuildinfo
+
+firmware/pebble/build/
+firmware/pebble/sdkconfig
+firmware/pebble/sdkconfig.old
+firmware/pebble/managed_components/
+firmware/dock/*.elf
+firmware/dock/*.bin
+firmware/dock/*.map
+firmware/dock/*.hex
+firmware/dock/*.lst
+firmware/dock/generated_*.ld
