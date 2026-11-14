@@ -1,0 +1,15 @@
+name = "pebbles-waitlist"
+main = "src/index.ts"
+compatibility_date = "2026-11-14"
+account_id = "327471fb378c74033d037887e0d4cf01"
+workers_dev = false
+
+# Public group id. The API key is a Worker secret, not a var.
+# Quoted on purpose: this integer is larger than 2^53.
+[vars]
+MAILERLITE_GROUP_ID = "204022254893270494"
+
+# Zone route only. Deploy does not create DNS records.
+[[routes]]
+pattern = "api.hellenicdev.eu/waitlist*"
+zone_name = "hellenicdev.eu"
