@@ -2,7 +2,15 @@
 
 Pebble firmware is ESP-IDF 5.x for the ESP32-C3-MINI-1-N4. Dock firmware is [ch32v003fun](https://github.com/cnlohr/ch32v003fun) for the CH32V003F4P6. Pin numbers come from the KiCad netlist and live in `pebble/components/board/include/pins.h` and `dock/pins.h`.
 
-`pebble/keys/dev_rsa_signing_key.pem` is a development RSA-3072 key so CI can sign images. Replace it before any device leaves the bench. It is not a production secret, and secure-boot fuses are not burned.
+CI builds an unsigned image. An over-the-air update is still required to carry an RSA-3072 signature, and the bootloader checks that signature before accepting it. Generate the key on your own machine and do not commit it:
+
+```sh
+idf.py secure-generate-signing-key keys/release_rsa_signing_key.pem
+espsecure.py sign_data --version 2 --keyfile keys/release_rsa_signing_key.pem \
+  -o pebble-signed.bin build/pebble.bin
+```
+
+No secure-boot fuses are burned. A key that was committed earlier on this branch must not be used.
 
 ## Pebble: native USB on the pogo pads
 
