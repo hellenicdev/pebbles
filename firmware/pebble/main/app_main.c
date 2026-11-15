@@ -18,6 +18,7 @@
 #include "touch_queue.h"
 #include "motion.h"
 #include "radio.h"
+#include "prov.h"
 #include "link.h"
 #include "factory.h"
 #include "ota_plan.h"
@@ -86,7 +87,7 @@ void app_main(void)
     }
 
     radio_init();
-    radio_prov_stub();
+    prov_start();
 
     bool low_latched = false;
     int64_t hello_block_until = 0;
