@@ -209,14 +209,18 @@
           meta.textContent = metaText;
           link.appendChild(name);
           link.appendChild(meta);
+          var card = document.createElement("div");
+          card.className = "release-card";
+          card.appendChild(link);
           var blurb = firstLine(release && release.body);
           if (blurb) {
             var note = document.createElement("p");
             note.className = "release-blurb";
             note.textContent = blurb;
-            link.appendChild(note);
+            card.appendChild(note);
           }
-          item.appendChild(link);
+          appendAssetLinks(card, release && release.assets);
+          item.appendChild(card);
           item.classList.add("reveal");
           list.appendChild(item);
           if (revealObserver) revealObserver.observe(item);
@@ -266,7 +270,10 @@
           meta.textContent = (when ? formatter.format(new Date(when)) : "Undated") + (sha ? " · " + sha : "");
           link.appendChild(name);
           link.appendChild(meta);
-          item.appendChild(link);
+          var card = document.createElement("div");
+          card.className = "release-card";
+          card.appendChild(link);
+          item.appendChild(card);
           item.classList.add("reveal");
           list.appendChild(item);
           if (revealObserver) revealObserver.observe(item);
@@ -276,6 +283,21 @@
       .catch(function () {
         status.textContent = "Recent commits couldn't be loaded. They are also on GitHub.";
       });
+  }
+
+  function appendAssetLinks(card, assets) {
+    if (!Array.isArray(assets) || assets.length === 0) return;
+    var row = document.createElement("p");
+    row.className = "release-downloads";
+    assets.forEach(function (asset) {
+      var href = asset && asset.browser_download_url;
+      if (typeof href !== "string" || href.indexOf("https://github.com/hellenicdev/pebbles/releases/download/") !== 0) return;
+      var link = document.createElement("a");
+      link.href = href;
+      link.textContent = "Download " + (asset.name || "file");
+      row.appendChild(link);
+    });
+    if (row.childNodes.length) card.appendChild(row);
   }
 
   function safeReleaseUrl(url) {
