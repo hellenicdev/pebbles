@@ -1,7 +1,10 @@
 package eu.hellenicdev.pebbles
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -34,22 +37,57 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.isSystemInDarkTheme
 
 /**
- * First APK. Settings match the fields the firmware will accept over BLE
- * (up to five Wi-Fi networks, a sender colour, quiet hours, a group of five).
- * Nothing is sent to a Pebble yet. [PreviewLink] only updates the on-screen pebble.
+ * Settings for colour, quiet hours, a group of five, and up to five Wi-Fi networks.
+ * Pair sends them to a Pebble. Tap and Hold stay on this phone.
  */
 class MainActivity : ComponentActivity() {
+    private val statusState = mutableStateOf("No Pebble is connected. This preview stays on the phone.")
+    private lateinit var latest: PebbleSettings
+    private lateinit var pairer: PebblePairer
+    private val permissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { grants ->
+        if (grants.isNotEmpty() && grants.values.all { it }) pairer.start(latest)
+        else statusState.value = "Bluetooth permission is required to pair."
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val store = SettingsStore(this)
+        latest = store.load()
+        pairer = PebblePairer(this) { message -> runOnUiThread { statusState.value = message } }
         setContent {
             val dark = isSystemInDarkTheme()
+            val status by statusState
             MaterialTheme(colorScheme = if (dark) pebbleDark() else pebbleLight()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    PebbleScreen(store.load()) { store.save(it) }
+                    PebbleScreen(
+                        initial = latest,
+                        status = status,
+                        onStatus = { statusState.value = it },
+                        onSave = {
+                            latest = it
+                            store.save(it)
+                        },
+                        onPair = { askToPair() },
+                    )
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        pairer.close()
+        super.onDestroy()
+    }
+
+    private fun askToPair() {
+        val needed = if (Build.VERSION.SDK_INT >= 31) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        permissions.launch(needed)
     }
 }
 
@@ -75,9 +113,14 @@ private class PreviewLink {
 }
 
 @Composable
-private fun PebbleScreen(initial: PebbleSettings, onSave: (PebbleSettings) -> Unit) {
+private fun PebbleScreen(
+    initial: PebbleSettings,
+    status: String,
+    onStatus: (String) -> Unit,
+    onSave: (PebbleSettings) -> Unit,
+    onPair: () -> Unit,
+) {
     var settings by remember { mutableStateOf(initial) }
-    var status by remember { mutableStateOf("No Pebble is connected. This preview stays on the phone.") }
     var ssid by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val link = remember { PreviewLink() }
@@ -105,12 +148,13 @@ private fun PebbleScreen(initial: PebbleSettings, onSave: (PebbleSettings) -> Un
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = {
                 link.tap(who, quiet)
-                status = link.status
+                onStatus(link.status)
             }) { Text("Tap") }
             Button(onClick = {
                 link.hug(who, quiet)
-                status = link.status
+                onStatus(link.status)
             }) { Text("Hold") }
+            Button(onClick = onPair) { Text("Pair") }
         }
 
         Text("Your colour", style = MaterialTheme.typography.titleMedium)

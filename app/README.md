@@ -1,6 +1,6 @@
 # Pebbles Android app
 
-First APK. It keeps the settings the pebble firmware is waiting for: a sender colour, quiet hours (UTC, no buzz and no chime), a group of five, and up to five Wi-Fi networks. They stay on the phone. Bluetooth pairing is not in this version, so Tap and Hold only update the preview on screen.
+The app keeps a sender colour, quiet hours (UTC, no buzz and no chime), a group of five, and up to five Wi-Fi networks. Tap and Hold update the on-screen preview. Pair looks for a Pebble advertising the service `5b1a8c10-6e2d-4a7f-9c31-0d4e5f6a7b80` and writes version-1 JSON to characteristic `5b1a8c11-6e2d-4a7f-9c31-0d4e5f6a7b80`. There is no PIN yet. The published 0.1.0 APK does not include pairing; this source is 0.2.0.
 
 Open `app/` in Android Studio, or from this directory:
 

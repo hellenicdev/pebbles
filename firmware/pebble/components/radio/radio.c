@@ -8,27 +8,16 @@
 #include "esp_log.h"
 #include "esp_sntp.h"
 
-/*
- * Up to five saved networks. The station scans and joins the strongest match.
- * BLE provisioning is a stub: the app that would write these credentials does
- * not exist yet.
- *
- * TODO: NimBLE GATT service for SSID, passphrase, sender colour, quiet hours,
- * and the group of up to five peers.
- */
+/* Up to five saved networks. The station joins the strongest saved match. */
 
 static const char *TAG = "radio";
 
-#define WIFI_MAX 5
+#define WIFI_MAX RADIO_WIFI_MAX
 
-typedef struct {
-    char ssid[33];
-    char pass[65];
-} wifi_cred_t;
-
-static wifi_cred_t s_creds[WIFI_MAX];
+static radio_network_t s_creds[WIFI_MAX];
 static int s_count;
 static bool s_connected;
+static bool s_started;
 static bool s_sntp;
 static int s_retries;
 
@@ -89,6 +78,7 @@ esp_err_t radio_init(void)
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_event, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
+    s_started = true;
 
     if (s_count == 0) {
         ESP_LOGI(TAG, "no saved networks");
@@ -150,7 +140,39 @@ esp_err_t radio_save_network(const char *ssid, const char *pass)
     return ESP_OK;
 }
 
-void radio_prov_stub(void)
+static void connect_first(void)
 {
-    ESP_LOGW(TAG, "TODO: BLE provisioning service is not started");
+    if (!s_started || s_count <= 0) {
+        return;
+    }
+    wifi_config_t sta = {0};
+    strncpy((char *)sta.sta.ssid, s_creds[0].ssid, sizeof(sta.sta.ssid) - 1);
+    strncpy((char *)sta.sta.password, s_creds[0].pass, sizeof(sta.sta.password) - 1);
+    esp_wifi_set_config(WIFI_IF_STA, &sta);
+    esp_wifi_connect();
+    ESP_LOGI(TAG, "joining %s", s_creds[0].ssid);
+}
+
+esp_err_t radio_replace_networks(const radio_network_t *list, int count)
+{
+    if (count < 0 || count > WIFI_MAX || (count > 0 && !list)) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    memset(s_creds, 0, sizeof(s_creds));
+    for (int i = 0; i < count; i++) {
+        if (!list[i].ssid[0]) {
+            return ESP_ERR_INVALID_ARG;
+        }
+        strncpy(s_creds[i].ssid, list[i].ssid, sizeof(s_creds[i].ssid) - 1);
+        strncpy(s_creds[i].pass, list[i].pass, sizeof(s_creds[i].pass) - 1);
+    }
+    s_count = count;
+    s_retries = 0;
+    persist();
+    if (s_started && count == 0) {
+        esp_wifi_disconnect();
+        return ESP_OK;
+    }
+    connect_first();
+    return ESP_OK;
 }
