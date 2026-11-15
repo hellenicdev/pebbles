@@ -66,7 +66,19 @@ class SettingsStore(context: Context) {
             .apply()
     }
 
+    fun introSeen(): Boolean = prefs.getBoolean("intro_seen", false)
+
+    fun markIntroSeen() {
+        prefs.edit().putBoolean("intro_seen", true).apply()
+    }
+
+    fun setupDone(): Boolean = prefs.getBoolean("setup_done", false)
+
+    fun markSetupDone() {
+        prefs.edit().putBoolean("setup_done", true).apply()
+    }
+
     private companion object {
-        val defaultNames = listOf("Sam", "Noor", "Alex", "Jo", "Ren")
+        val defaultNames = List(5) { "" }
     }
 }

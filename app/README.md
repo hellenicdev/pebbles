@@ -1,6 +1,8 @@
 # Pebbles Android app
 
-The app keeps a sender colour, quiet hours (UTC, no buzz and no chime), a group of five, and up to five Wi-Fi networks. Tap and Hold update the on-screen preview. Pair looks for a Pebble advertising the service `5b1a8c10-6e2d-4a7f-9c31-0d4e5f6a7b80` and writes version-1 JSON to characteristic `5b1a8c11-6e2d-4a7f-9c31-0d4e5f6a7b80`. There is no PIN yet. The published 0.1.0 APK does not include pairing; this source is 0.2.0.
+The first launch is a short introduction, then setup. After that the app is four settings screens: Home, People, Pebble, and Wi-Fi. The phone does not send a tap or a hug. Those happen on the Pebble.
+
+Pair writes version-1 JSON to service `5b1a8c10-6e2d-4a7f-9c31-0d4e5f6a7b80`, characteristic `5b1a8c11-6e2d-4a7f-9c31-0d4e5f6a7b80`: colour, quiet hours, up to five names, and up to five Wi-Fi networks. There is no PIN yet. This source is 0.3.0. The published 0.2.0 APK is the earlier one-screen version.
 
 Open `app/` in Android Studio, or from this directory:
 
