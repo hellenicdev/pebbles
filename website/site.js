@@ -169,6 +169,9 @@
   var releaseList = document.querySelector("#release-list");
   var releaseStatus = document.querySelector("#release-status");
   if (releaseList && releaseStatus) loadReleases(releaseList, releaseStatus);
+  var commitList = document.querySelector("#commit-list");
+  var commitStatus = document.querySelector("#commit-status");
+  if (commitList && commitStatus) loadCommits(commitList, commitStatus);
 
   function loadReleases(list, status) {
     status.textContent = "Fetching the latest releases…";
@@ -222,6 +225,56 @@
       })
       .catch(function () {
         status.textContent = "The build log couldn't be loaded. Releases are also on GitHub.";
+      });
+  }
+
+  function loadCommits(list, status) {
+    status.textContent = "Fetching recent commits…";
+    fetch("https://api.github.com/repos/hellenicdev/pebbles/commits?per_page=8", {
+      headers: { accept: "application/vnd.github+json" }
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error("status");
+        return response.json();
+      })
+      .then(function (commits) {
+        if (!Array.isArray(commits) || commits.length === 0) {
+          status.textContent = "No commits to show yet.";
+          return;
+        }
+        status.textContent = "";
+        var formatter = new Intl.DateTimeFormat("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC"
+        });
+        commits.forEach(function (commit) {
+          var item = document.createElement("li");
+          var link = document.createElement("a");
+          var htmlUrl = commit && commit.html_url;
+          link.href = typeof htmlUrl === "string" && htmlUrl.indexOf("https://github.com/hellenicdev/pebbles/") === 0
+            ? htmlUrl
+            : "https://github.com/hellenicdev/pebbles/commits/main";
+          var name = document.createElement("span");
+          name.className = "release-name";
+          name.textContent = firstLine(commit && commit.commit && commit.commit.message) || "Commit";
+          var meta = document.createElement("span");
+          meta.className = "release-meta";
+          var when = commit && commit.commit && commit.commit.author && commit.commit.author.date;
+          var sha = commit && commit.sha ? String(commit.sha).slice(0, 7) : "";
+          meta.textContent = (when ? formatter.format(new Date(when)) : "Undated") + (sha ? " · " + sha : "");
+          link.appendChild(name);
+          link.appendChild(meta);
+          item.appendChild(link);
+          item.classList.add("reveal");
+          list.appendChild(item);
+          if (revealObserver) revealObserver.observe(item);
+          else item.classList.add("is-in");
+        });
+      })
+      .catch(function () {
+        status.textContent = "Recent commits couldn't be loaded. They are also on GitHub.";
       });
   }
 
