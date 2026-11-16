@@ -6,12 +6,14 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +40,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         val store = SettingsStore(this)
         latest = store.load()
         pairer = PebblePairer(this) { message -> runOnUiThread { statusState.value = message } }
@@ -51,9 +54,14 @@ class MainActivity : ComponentActivity() {
             val status by statusState
             var settings by remember { mutableStateOf(latest) }
             var phase by rememberSaveable { mutableStateOf(start) }
-            MaterialTheme(colorScheme = if (dark) pebbleDark() else pebbleLight()) {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Box(Modifier.fillMaxSize()) {
+            BrandTheme(dark) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(PebblesBrand.current.bg)
+                        .safeDrawingPadding()
+                        .imePadding(),
+                ) {
                         when (phase) {
                             Phase.Intro -> IntroScreen(
                                 colour = pebbleColor(settings.colour),
@@ -94,7 +102,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
 
     override fun onDestroy() {
         pairer.close()

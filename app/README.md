@@ -1,8 +1,8 @@
 # Pebbles Android app
 
-The first launch is a short introduction, then setup. After that the app is four settings screens: Home, People, Pebble, and Wi-Fi. The phone does not send a tap or a hug. Those happen on the Pebble.
+The first launch is a short introduction, then setup. After that the app is four settings screens: Home, People, Pebble, and Wi-Fi. The phone does not send a tap or a hug. Those happen on the Pebble. A group can hold anywhere from one person to five.
 
-Pair writes version-1 JSON to service `5b1a8c10-6e2d-4a7f-9c31-0d4e5f6a7b80`, characteristic `5b1a8c11-6e2d-4a7f-9c31-0d4e5f6a7b80`: colour, quiet hours, up to five names, and up to five Wi-Fi networks. There is no PIN yet. This source is 0.3.0. The published 0.2.0 APK is the earlier one-screen version.
+Pair writes version-1 JSON to service `5b1a8c10-6e2d-4a7f-9c31-0d4e5f6a7b80`, characteristic `5b1a8c11-6e2d-4a7f-9c31-0d4e5f6a7b80`: colour, quiet hours, the names you added, and up to five Wi-Fi networks. There is no PIN yet. This source is 0.4.0. The published 0.3.0 APK is the earlier version.
 
 Open `app/` in Android Studio, or from this directory:
 

@@ -30,9 +30,7 @@ class SettingsStore(context: Context) {
     fun load(): PebbleSettings {
         val colourName = prefs.getString("colour_name", "Amber") ?: "Amber"
         val colour = Colours.choices.firstOrNull { it.first == colourName }?.second ?: Colours.choices[0].second
-        val names = MutableList(5) { index ->
-            prefs.getString("name_$index", defaultNames[index]) ?: defaultNames[index]
-        }
+        val names = loadNames()
         val networks = mutableListOf<WifiNetwork>()
         val raw = prefs.getString("wifi", "[]") ?: "[]"
         val array = JSONArray(raw)
@@ -55,15 +53,28 @@ class SettingsStore(context: Context) {
         settings.networks.take(5).forEach { network ->
             wifi.put(JSONObject().put("ssid", network.ssid).put("password", network.password))
         }
-        prefs.edit()
+        val people = settings.names.take(5)
+        val editor = prefs.edit()
             .putString("colour_name", settings.colourName)
             .putInt("quiet_start", settings.quietStart)
             .putInt("quiet_end", settings.quietEnd)
             .putString("wifi", wifi.toString())
-            .apply {
-                settings.names.take(5).forEachIndexed { index, name -> putString("name_$index", name) }
-            }
-            .apply()
+            .putInt("name_count", people.size)
+        for (index in 0 until 5) {
+            if (index < people.size) editor.putString("name_$index", people[index])
+            else editor.remove("name_$index")
+        }
+        editor.apply()
+    }
+
+    private fun loadNames(): List<String> {
+        if (prefs.contains("name_count")) {
+            val count = prefs.getInt("name_count", 0).coerceIn(0, 5)
+            return List(count) { index -> prefs.getString("name_$index", "") ?: "" }
+        }
+        val legacy = (0 until 5).map { index -> prefs.getString("name_$index", null) }
+        if (legacy.all { it == null }) return emptyList()
+        return legacy.map { it ?: "" }.filter { it.isNotBlank() }
     }
 
     fun introSeen(): Boolean = prefs.getBoolean("intro_seen", false)
@@ -78,7 +89,4 @@ class SettingsStore(context: Context) {
         prefs.edit().putBoolean("setup_done", true).apply()
     }
 
-    private companion object {
-        val defaultNames = List(5) { "" }
-    }
 }
