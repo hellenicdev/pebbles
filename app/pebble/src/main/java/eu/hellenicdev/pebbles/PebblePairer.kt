@@ -202,7 +202,7 @@ private fun PebbleSettings.toPairingJson(): ByteArray {
         )
         .put("quiet", JSONArray().put(quietStart).put(quietEnd))
     val people = JSONArray()
-    names.take(5).forEach { people.put(it.take(32)) }
+    names.map { it.trim() }.filter { it.isNotEmpty() }.take(5).forEach { people.put(it.take(32)) }
     body.put("names", people)
     val networksJson = JSONArray()
     networks.take(5).forEach { network ->
