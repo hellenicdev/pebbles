@@ -89,4 +89,13 @@ class SettingsStore(context: Context) {
         prefs.edit().putBoolean("setup_done", true).apply()
     }
 
+    fun crashReportsEnabled(): Boolean = prefs.getBoolean(CRASH_REPORTS, false)
+
+    fun setCrashReportsEnabled(enabled: Boolean): Boolean {
+        return prefs.edit().putBoolean(CRASH_REPORTS, enabled).commit()
+    }
+
+    private companion object {
+        const val CRASH_REPORTS = "crash_reports"
+    }
 }

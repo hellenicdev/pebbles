@@ -9,6 +9,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,6 +24,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,8 +53,11 @@ fun AppShell(
     settings: PebbleSettings,
     status: String,
     motion: Boolean,
+    crashReports: Boolean,
     onChange: (PebbleSettings) -> Unit,
     onPair: () -> Unit,
+    onCrashReports: (Boolean) -> Unit,
+    onSendTestError: () -> Boolean,
 ) {
     var place by rememberSaveable { mutableStateOf(Place.Home) }
     val colour = pebbleColor(settings.colour)
@@ -64,7 +71,14 @@ fun AppShell(
                 label = "place",
             ) { current ->
                 when (current) {
-                    Place.Home -> HomePlace(settings, status, motion)
+                    Place.Home -> HomePlace(
+                        settings,
+                        status,
+                        motion,
+                        crashReports,
+                        onCrashReports,
+                        onSendTestError,
+                    )
                     Place.People -> PeoplePlace(settings, onChange)
                     Place.Pebble -> PebblePlace(settings, status, motion, onChange, onPair)
                     Place.Wifi -> WifiPlace(settings, onChange)
@@ -106,7 +120,14 @@ private fun RowScope.PlaceTab(label: String, selected: Boolean, onClick: () -> U
 }
 
 @Composable
-private fun HomePlace(settings: PebbleSettings, status: String, motion: Boolean) {
+private fun HomePlace(
+    settings: PebbleSettings,
+    status: String,
+    motion: Boolean,
+    crashReports: Boolean,
+    onCrashReports: (Boolean) -> Unit,
+    onSendTestError: () -> Boolean,
+) {
     val brand = PebblesBrand.current
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val pebbleHeight = (maxHeight * 0.34f).coerceIn(120.dp, 210.dp)
@@ -138,7 +159,86 @@ private fun HomePlace(settings: PebbleSettings, status: String, motion: Boolean)
                 color = brand.inkSoft,
                 textAlign = TextAlign.Center,
             )
+            Spacer(Modifier.height(22.dp))
+            Text(
+                "THIS PHONE",
+                style = Type.eyebrow,
+                color = brand.accent,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+            )
+            Spacer(Modifier.height(8.dp))
+            CrashReportSwitch(crashReports, onCrashReports)
+            if (BuildConfig.DEBUG) {
+                DebugTestError(crashReports, onSendTestError)
+            }
         }
+    }
+}
+
+@Composable
+private fun CrashReportSwitch(enabled: Boolean, onChange: (Boolean) -> Unit) {
+    val brand = PebblesBrand.current
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .toggleable(value = enabled, role = Role.Switch, onValueChange = onChange),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Send anonymous crash reports",
+                style = Type.body,
+                color = brand.ink,
+                modifier = Modifier.weight(1f).padding(end = 12.dp),
+            )
+            Switch(
+                checked = enabled,
+                onCheckedChange = null,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = brand.elev,
+                    checkedTrackColor = brand.accent,
+                    checkedBorderColor = brand.accent,
+                    uncheckedThumbColor = brand.elev,
+                    uncheckedTrackColor = brand.line,
+                    uncheckedBorderColor = brand.line,
+                ),
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Off unless you turn this on. A report has the error and the app version. It leaves out names, Wi-Fi, and touches.",
+            style = Type.body,
+            color = brand.inkSoft,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Start,
+        )
+    }
+}
+
+@Composable
+private fun DebugTestError(crashReports: Boolean, onSendTestError: () -> Boolean) {
+    val brand = PebblesBrand.current
+    var testStatus by rememberSaveable { mutableStateOf("") }
+    Spacer(Modifier.height(8.dp))
+    BrandQuiet(
+        "Send test error",
+        onClick = {
+            testStatus = if (crashReports && onSendTestError()) {
+                "Test error sent."
+            } else {
+                "Turn crash reports on first. Nothing is sent while this is off."
+            }
+        },
+    )
+    if (testStatus.isNotEmpty()) {
+        Text(
+            testStatus,
+            style = Type.body,
+            color = brand.inkSoft,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Start,
+        )
     }
 }
 
