@@ -2,7 +2,32 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("io.sentry.android.gradle")
 }
+
+val defaultSentryDsn =
+    "https://f6586d71fba55531896a3ef3414811ab@o4511908991729664.ingest.de.sentry.io/4512469049081936"
+
+fun javaStringLiteral(value: String): String = buildString {
+    append('"')
+    value.forEach { ch ->
+        when (ch) {
+            '\\' -> append("\\\\")
+            '"' -> append("\\\"")
+            '\n' -> append("\\n")
+            '\r' -> append("\\r")
+            else -> append(ch)
+        }
+    }
+    append('"')
+}
+
+// SENTRY_DSN wins over -PsentryDsn. Both are optional; the project DSN is the default.
+val sentryDsn: String = listOf(
+    System.getenv("SENTRY_DSN"),
+    findProperty("sentryDsn") as? String,
+).firstNotNullOfOrNull { value -> value?.trim()?.takeIf { it.isNotEmpty() } }
+    ?: defaultSentryDsn
 
 android {
     namespace = "eu.hellenicdev.pebbles"
@@ -14,6 +39,7 @@ android {
         targetSdk = 35
         versionCode = 4
         versionName = "0.4.0"
+        buildConfigField("String", "SENTRY_DSN", javaStringLiteral(sentryDsn))
     }
 
     val storePath = System.getenv("PEBBLES_STORE_FILE")
@@ -49,6 +75,36 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+}
+
+sentry {
+    org.set("hellenicdev")
+    projectName.set("pebbles-android")
+    url.set("https://de.sentry.io")
+
+    // Mapping and source upload need a Sentry auth token. Keep them off so
+    // assembleDebug and assembleRelease succeed with no extra secrets.
+    includeProguardMapping.set(false)
+    autoUploadProguardMapping.set(false)
+    uploadNativeSymbols.set(false)
+    autoUploadNativeSymbols.set(false)
+    includeNativeSources.set(false)
+    includeSourceContext.set(false)
+    autoUploadSourceContext.set(false)
+    telemetry.set(false)
+
+    tracingInstrumentation {
+        enabled.set(false)
+        logcat {
+            enabled.set(false)
+        }
+    }
+
+    autoInstallation {
+        enabled.set(true)
+        sentryVersion.set("8.65.0")
     }
 }
 
@@ -62,5 +118,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("io.sentry:sentry-android:8.65.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    testImplementation("junit:junit:4.13.2")
 }

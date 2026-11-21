@@ -54,6 +54,8 @@ class MainActivity : ComponentActivity() {
             val status by statusState
             var settings by remember { mutableStateOf(latest) }
             var phase by rememberSaveable { mutableStateOf(start) }
+            var crashReports by remember { mutableStateOf(store.crashReportsEnabled()) }
+            var includeIp by remember { mutableStateOf(store.crashReportsIncludeIp()) }
             BrandTheme(dark) {
                 Box(
                     Modifier
@@ -90,12 +92,25 @@ class MainActivity : ComponentActivity() {
                                 settings = settings,
                                 status = status,
                                 motion = motionAllowed(),
+                                crashReports = crashReports,
                                 onChange = {
                                     settings = it
                                     latest = it
                                     store.save(it)
                                 },
                                 onPair = { askToPair() },
+                                onCrashReports = { enabled ->
+                                    if (store.setCrashReportsEnabled(enabled)) {
+                                        crashReports = enabled
+                                        if (enabled) CrashReports.start(this@MainActivity)
+                                        else CrashReports.stop()
+                                    }
+                                },
+                                includeIp = includeIp,
+                                onIncludeIp = { include ->
+                                    if (store.setCrashReportsIncludeIp(include)) includeIp = include
+                                },
+                                onSendTestError = { CrashReports.sendTestError() },
                             )
                         }
                     }
