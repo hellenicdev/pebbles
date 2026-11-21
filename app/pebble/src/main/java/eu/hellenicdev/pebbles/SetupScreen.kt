@@ -184,5 +184,5 @@ private fun PairStep(status: String, onPair: () -> Unit) {
     Spacer(Modifier.height(12.dp))
     BrandButton("Pair", onClick = onPair)
     Spacer(Modifier.height(8.dp))
-    Text("You can finish now and pair later from the Pebble screen.", style = Type.body, color = brand.inkSoft)
+    Text("You can finish now and pair later from Settings.", style = Type.body, color = brand.inkSoft)
 }

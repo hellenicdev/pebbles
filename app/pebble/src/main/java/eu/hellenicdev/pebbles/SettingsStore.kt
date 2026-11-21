@@ -6,6 +6,12 @@ import org.json.JSONObject
 
 data class WifiNetwork(val ssid: String, val password: String)
 
+enum class Occasion(val id: String, val title: String, val line: String) {
+    Birthday("birthday", "Birthday", "A warmer glow."),
+    Anniversary("anniversary", "Anniversary", "A second pebble joins in."),
+    QuietDay("quiet-day", "A quiet day", "The glow stays low."),
+}
+
 data class PebbleSettings(
     val colourName: String,
     val colour: Long,
@@ -102,8 +108,23 @@ class SettingsStore(context: Context) {
         return prefs.edit().putBoolean(CRASH_REPORTS_INCLUDE_IP, includeIp).commit()
     }
 
+    fun occasionEnabled(id: String): Boolean = prefs.getBoolean("occasion_$id", false)
+
+    fun setOccasionEnabled(id: String, enabled: Boolean) {
+        prefs.edit().putBoolean("occasion_$id", enabled).apply()
+    }
+
+    fun enabledOccasions(): Set<String> = Occasion.entries.filter { occasionEnabled(it.id) }.map { it.id }.toSet()
+
+    fun updateCheckOnLaunch(): Boolean = prefs.getBoolean(UPDATE_CHECK, true)
+
+    fun setUpdateCheckOnLaunch(enabled: Boolean) {
+        prefs.edit().putBoolean(UPDATE_CHECK, enabled).apply()
+    }
+
     private companion object {
         const val CRASH_REPORTS = "crash_reports"
         const val CRASH_REPORTS_INCLUDE_IP = "crash_reports_include_ip"
+        const val UPDATE_CHECK = "update_check_on_launch"
     }
 }

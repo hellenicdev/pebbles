@@ -26,9 +26,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Text
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -37,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -56,6 +65,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.os.Build
 import java.util.Calendar
 import java.util.TimeZone
 import kotlin.math.PI
@@ -149,9 +159,65 @@ object PebblesBrand {
         @Composable get() = LocalBrand.current
 }
 
+private val PebbleTypography = Typography(
+    headlineLarge = Type.display,
+    headlineMedium = Type.title,
+    titleLarge = Type.title,
+    bodyLarge = Type.body,
+    bodyMedium = Type.body,
+    labelLarge = Type.button,
+    labelMedium = Type.eyebrow,
+)
+
 @Composable
-fun BrandTheme(dark: Boolean, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalBrand provides if (dark) DarkBrand else LightBrand, content = content)
+fun BrandTheme(dark: Boolean, accent: Color = Color(0xFF7C3A24), content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val dynamic = if (Build.VERSION.SDK_INT >= 31) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        null
+    }
+    val seeded = if (dark) {
+        darkColorScheme(
+            primary = accent,
+            onPrimary = Color(0xFF241F1B),
+            background = DarkBrand.bg,
+            surface = DarkBrand.elev,
+            onBackground = DarkBrand.ink,
+            onSurface = DarkBrand.ink,
+            onSurfaceVariant = DarkBrand.inkSoft,
+            outlineVariant = DarkBrand.line,
+        )
+    } else {
+        lightColorScheme(
+            primary = accent,
+            onPrimary = Color(0xFFFFFAF4),
+            background = LightBrand.bg,
+            surface = LightBrand.elev,
+            onBackground = LightBrand.ink,
+            onSurface = LightBrand.ink,
+            onSurfaceVariant = LightBrand.inkSoft,
+            outlineVariant = LightBrand.line,
+        )
+    }
+    val scheme = (dynamic ?: seeded).copy(
+        primary = accent,
+        onPrimary = if (dark) Color(0xFF241F1B) else Color(0xFFFFFAF4),
+        primaryContainer = accent.copy(alpha = if (dark) 0.28f else 0.18f),
+    )
+    val brand = Brand(
+        bg = scheme.background,
+        elev = scheme.surfaceContainerHigh,
+        ink = scheme.onBackground,
+        inkSoft = scheme.onSurfaceVariant,
+        line = scheme.outlineVariant,
+        accent = accent,
+        button = scheme.primary,
+        buttonText = scheme.onPrimary,
+    )
+    MaterialTheme(colorScheme = scheme, typography = PebbleTypography) {
+        CompositionLocalProvider(LocalBrand provides brand, content = content)
+    }
 }
 
 enum class PebbleScene { Rest, Tap, Hug, Reply, Quiet }
@@ -302,37 +368,20 @@ fun BrandButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val brand = PebblesBrand.current
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed && enabled) 0.97f else 1f, tween(160, easing = SmoothOut), label = "press")
-    Box(
-        modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(999.dp))
-            .background(if (enabled) brand.button else brand.button.copy(alpha = 0.35f))
-            .clickable(interaction, indication = null, enabled = enabled, onClick = onClick)
-            .padding(horizontal = 22.dp, vertical = 14.dp),
-        contentAlignment = Alignment.Center,
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        shape = RoundedCornerShape(999.dp),
     ) {
-        Text(text, style = Type.button, color = brand.buttonText)
+        Text(text, style = Type.button)
     }
 }
 
 @Composable
 fun BrandQuiet(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val brand = PebblesBrand.current
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val alpha by animateFloatAsState(if (pressed) 0.55f else 1f, tween(140), label = "quiet")
-    Box(
-        modifier
-            .graphicsLayer { this.alpha = alpha }
-            .clickable(interaction, indication = null, onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text, style = Type.button, color = brand.accent)
+    TextButton(onClick = onClick, modifier = modifier) {
+        Text(text, style = Type.button, color = PebblesBrand.current.accent)
     }
 }
 
@@ -345,32 +394,15 @@ fun BrandField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
 ) {
-    val brand = PebblesBrand.current
-    val shape = RoundedCornerShape(18.dp)
-    BasicTextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
-        textStyle = Type.body.copy(color = brand.ink),
+        label = { Text(label) },
         singleLine = true,
         visualTransformation = visualTransformation,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        cursorBrush = SolidColor(brand.accent),
-        decorationBox = { inner ->
-            Column {
-                Text(label, style = Type.eyebrow, color = brand.inkSoft)
-                Box(Modifier.height(6.dp))
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(brand.elev, shape)
-                        .border(1.dp, brand.line, shape)
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                ) {
-                    inner()
-                }
-            }
-        },
+        shape = RoundedCornerShape(18.dp),
     )
 }
 
