@@ -1,15 +1,19 @@
 package eu.hellenicdev.pebbles
 
 import android.content.Context
+import io.sentry.IpAddressUtils
 import io.sentry.Sentry
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
+import io.sentry.protocol.SdkVersion
 import io.sentry.protocol.SentryException
+import io.sentry.protocol.User
 
 /**
  * Crash reporting starts only after the person opts in, and stops when they turn it off.
- * Reports are errors only: no tracing, no session replay, and no user id, email, or IP.
+ * Reports are errors only. Anonymous is the default and does not store an IP address.
+ * Include IP sends {{auto}} and nothing else that identifies the person.
  */
 object CrashReports {
     private val lock = Any()
@@ -70,14 +74,23 @@ object CrashReports {
             }
         }
         options.beforeSend = SentryOptions.BeforeSendCallback { event, _ ->
-            if (!SettingsStore(context).crashReportsEnabled()) null else scrubEvent(event)
+            val store = SettingsStore(context)
+            if (!store.crashReportsEnabled()) {
+                null
+            } else {
+                prepareCrashReport(event, store.crashReportsIncludeIp())
+            }
         }
         options.beforeSendTransaction = SentryOptions.BeforeSendTransactionCallback { _, _ -> null }
     }
 
-    private fun scrubEvent(event: io.sentry.SentryEvent): io.sentry.SentryEvent? {
+    /**
+     * Scrubs a report and sets the IP mode. Anonymous sends no IP marker and tells Relay
+     * `infer_ip: never`, so the connection address is not stored while the project setting
+     * stays off. Include IP sends `{{auto}}` and still drops every other identifier.
+     */
+    internal fun prepareCrashReport(event: io.sentry.SentryEvent, includeIp: Boolean): io.sentry.SentryEvent? {
         return try {
-            event.user = null
             event.request = null
             event.serverName = null
             event.contexts.remove("user")
@@ -103,10 +116,26 @@ object CrashReports {
                 }
             }
             event.breadcrumbs = kept
+            applyIpChoice(event, includeIp)
             event
         } catch (_: Throwable) {
             null
         }
+    }
+
+    private fun applyIpChoice(event: io.sentry.SentryEvent, includeIp: Boolean) {
+        val user = User()
+        user.ipAddress = if (includeIp) IpAddressUtils.DEFAULT_IP_ADDRESS else null
+        event.user = user
+        val current = event.sdk
+        val sdk = SdkVersion(
+            current?.name ?: "sentry.java.android",
+            current?.version ?: "8.65.0",
+        )
+        sdk.unknown = mapOf(
+            "settings" to mapOf("infer_ip" to if (includeIp) "auto" else "never"),
+        )
+        event.sdk = sdk
     }
 
     private fun redactException(exception: SentryException) {

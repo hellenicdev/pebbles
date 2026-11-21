@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -57,6 +59,8 @@ fun AppShell(
     onChange: (PebbleSettings) -> Unit,
     onPair: () -> Unit,
     onCrashReports: (Boolean) -> Unit,
+    includeIp: Boolean,
+    onIncludeIp: (Boolean) -> Unit,
     onSendTestError: () -> Boolean,
 ) {
     var place by rememberSaveable { mutableStateOf(Place.Home) }
@@ -77,6 +81,8 @@ fun AppShell(
                         motion,
                         crashReports,
                         onCrashReports,
+                        includeIp,
+                        onIncludeIp,
                         onSendTestError,
                     )
                     Place.People -> PeoplePlace(settings, onChange)
@@ -126,6 +132,8 @@ private fun HomePlace(
     motion: Boolean,
     crashReports: Boolean,
     onCrashReports: (Boolean) -> Unit,
+    includeIp: Boolean,
+    onIncludeIp: (Boolean) -> Unit,
     onSendTestError: () -> Boolean,
 ) {
     val brand = PebblesBrand.current
@@ -168,7 +176,7 @@ private fun HomePlace(
                 textAlign = TextAlign.Start,
             )
             Spacer(Modifier.height(8.dp))
-            CrashReportSwitch(crashReports, onCrashReports)
+            CrashReportSwitch(crashReports, onCrashReports, includeIp, onIncludeIp)
             if (BuildConfig.DEBUG) {
                 DebugTestError(crashReports, onSendTestError)
             }
@@ -177,7 +185,12 @@ private fun HomePlace(
 }
 
 @Composable
-private fun CrashReportSwitch(enabled: Boolean, onChange: (Boolean) -> Unit) {
+private fun CrashReportSwitch(
+    enabled: Boolean,
+    onChange: (Boolean) -> Unit,
+    includeIp: Boolean,
+    onIncludeIp: (Boolean) -> Unit,
+) {
     val brand = PebblesBrand.current
     Column(Modifier.fillMaxWidth()) {
         Row(
@@ -187,7 +200,7 @@ private fun CrashReportSwitch(enabled: Boolean, onChange: (Boolean) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Send anonymous crash reports",
+                "Send crash reports",
                 style = Type.body,
                 color = brand.ink,
                 modifier = Modifier.weight(1f).padding(end = 12.dp),
@@ -212,6 +225,61 @@ private fun CrashReportSwitch(enabled: Boolean, onChange: (Boolean) -> Unit) {
             color = brand.inkSoft,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Start,
+        )
+        Spacer(Modifier.height(8.dp))
+        IpChoice(enabled = enabled, includeIp = includeIp, onIncludeIp = onIncludeIp)
+    }
+}
+
+@Composable
+private fun IpChoice(enabled: Boolean, includeIp: Boolean, onIncludeIp: (Boolean) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        IpOption(
+            label = "Anonymous",
+            selected = !includeIp,
+            enabled = enabled,
+            onSelect = { onIncludeIp(false) },
+        )
+        IpOption(
+            label = "Include my IP address",
+            selected = includeIp,
+            enabled = enabled,
+            onSelect = { onIncludeIp(true) },
+        )
+    }
+}
+
+@Composable
+private fun IpOption(label: String, selected: Boolean, enabled: Boolean, onSelect: () -> Unit) {
+    val brand = PebblesBrand.current
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(
+                interaction,
+                indication = null,
+                enabled = enabled,
+                role = Role.RadioButton,
+                onClick = onSelect,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            enabled = enabled,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = brand.accent,
+                unselectedColor = brand.inkSoft,
+                disabledSelectedColor = brand.accent.copy(alpha = 0.38f),
+                disabledUnselectedColor = brand.inkSoft.copy(alpha = 0.38f),
+            ),
+        )
+        Text(
+            label,
+            style = Type.body,
+            color = if (enabled) brand.ink else brand.inkSoft,
         )
     }
 }

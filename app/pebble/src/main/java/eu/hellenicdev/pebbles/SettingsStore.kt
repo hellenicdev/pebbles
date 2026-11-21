@@ -95,7 +95,15 @@ class SettingsStore(context: Context) {
         return prefs.edit().putBoolean(CRASH_REPORTS, enabled).commit()
     }
 
+    /** False is Anonymous. True lets Sentry record the connection IP. */
+    fun crashReportsIncludeIp(): Boolean = prefs.getBoolean(CRASH_REPORTS_INCLUDE_IP, false)
+
+    fun setCrashReportsIncludeIp(includeIp: Boolean): Boolean {
+        return prefs.edit().putBoolean(CRASH_REPORTS_INCLUDE_IP, includeIp).commit()
+    }
+
     private companion object {
         const val CRASH_REPORTS = "crash_reports"
+        const val CRASH_REPORTS_INCLUDE_IP = "crash_reports_include_ip"
     }
 }

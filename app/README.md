@@ -46,9 +46,13 @@ Without those variables, `assembleRelease` still writes an APK, and that APK is 
 
 ## Crash reports
 
-Crash reports are off until you turn on "Send anonymous crash reports" on the Home screen. That choice stays on the phone. While it is off, Sentry does not start and nothing is sent. Turning it off stops sending.
+Crash reports are off until you turn on "Send crash reports" on the Home screen. That choice stays on the phone. While it is off, Sentry does not start and nothing is sent. Turning it off stops sending.
 
-A report is the error, the app version (`pebble@` plus `versionName`, so `pebble@0.4.0` today), and `debug` or `release`. It does not include a user id, an email, an IP address, Wi-Fi names or passwords, or the contents of a touch. There is no performance tracing and no session replay.
+Under the switch, and only while it is on, choose "Anonymous" or "Include my IP address". Anonymous is the default. Both choices stay on the phone, and changing them applies to the next report without restarting the app.
+
+A report is the error, the app version (`pebble@` plus `versionName`, so `pebble@0.4.0` today), and `debug` or `release`. It does not include a user id, an email, Wi-Fi names or passwords, or the contents of a touch. Anonymous also sends no IP address. Include my IP address lets Sentry record this phone's connection address and nothing else. There is no performance tracing and no session replay.
+
+Anonymous works with Sentry's "Prevent Storing of IP Addresses" left off. The report does not contain `{{auto}}`. It sets `sdk.settings.infer_ip` to `never`, which tells Relay not to fill the connection IP. Include my IP address sends `user.ip_address` as `{{auto}}` and `infer_ip` as `auto`, so Sentry stores the connection address.
 
 To check a debug build, turn the switch on, then tap "Send test error". That button is not in a release build. The event shows up in the Sentry project `pebbles-android` (org `hellenicdev`, EU, [de.sentry.io](https://de.sentry.io)).
 

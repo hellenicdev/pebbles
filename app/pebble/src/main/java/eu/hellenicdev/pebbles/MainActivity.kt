@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
             var settings by remember { mutableStateOf(latest) }
             var phase by rememberSaveable { mutableStateOf(start) }
             var crashReports by remember { mutableStateOf(store.crashReportsEnabled()) }
+            var includeIp by remember { mutableStateOf(store.crashReportsIncludeIp()) }
             BrandTheme(dark) {
                 Box(
                     Modifier
@@ -104,6 +105,10 @@ class MainActivity : ComponentActivity() {
                                         if (enabled) CrashReports.start(this@MainActivity)
                                         else CrashReports.stop()
                                     }
+                                },
+                                includeIp = includeIp,
+                                onIncludeIp = { include ->
+                                    if (store.setCrashReportsIncludeIp(include)) includeIp = include
                                 },
                                 onSendTestError = { CrashReports.sendTestError() },
                             )
