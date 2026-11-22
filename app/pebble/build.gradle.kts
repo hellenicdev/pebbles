@@ -38,10 +38,10 @@ android {
         minSdk = 26
         targetSdk = 35
         val requestedVersion = (findProperty("versionName") as? String)?.trim()?.takeIf { it.isNotEmpty() }
-        versionName = requestedVersion ?: "0.4.0"
-        // The default code stays 4. A release build can pass -PversionName=0.5.0
-        // and the code becomes major*10000 + minor*100 + patch, so an update installs.
-        versionCode = if (requestedVersion == null) 4 else semverCode(requestedVersion)
+        val appVersion = requestedVersion ?: "0.5.0"
+        versionName = appVersion
+        // major*10000 + minor*100 + patch, so a newer release can install over this one.
+        versionCode = semverCode(appVersion)
         buildConfigField("String", "SENTRY_DSN", javaStringLiteral(sentryDsn))
     }
 

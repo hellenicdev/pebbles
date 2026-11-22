@@ -31,7 +31,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
  * First launch introduces the pebble, then setup. After that Home shows the
- * group and a touch, and Settings holds everything else.
+ * group, and Settings holds everything else. Touches are sent on the pebble.
  */
 class MainActivity : ComponentActivity() {
     private val statusState = mutableStateOf("Not paired yet.")
