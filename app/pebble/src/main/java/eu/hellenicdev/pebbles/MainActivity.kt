@@ -8,24 +8,30 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
- * First launch introduces the pebble, then setup. After that the app is
- * settings only: home, people, the pebble, and Wi-Fi. Touches stay on the device.
+ * First launch introduces the pebble, then setup. After that Home shows the
+ * group and a touch, and Settings holds everything else.
  */
 class MainActivity : ComponentActivity() {
     private val statusState = mutableStateOf("Not paired yet.")
@@ -56,67 +62,85 @@ class MainActivity : ComponentActivity() {
             var phase by rememberSaveable { mutableStateOf(start) }
             var crashReports by remember { mutableStateOf(store.crashReportsEnabled()) }
             var includeIp by remember { mutableStateOf(store.crashReportsIncludeIp()) }
-            BrandTheme(dark) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(PebblesBrand.current.bg)
-                        .safeDrawingPadding()
-                        .imePadding(),
-                ) {
-                        when (phase) {
-                            Phase.Intro -> IntroScreen(
-                                colour = pebbleColor(settings.colour),
-                                motion = motionAllowed(),
-                                onDone = {
-                                    store.markIntroSeen()
-                                    phase = Phase.Setup
-                                },
-                            )
-                            Phase.Setup -> SetupScreen(
-                                settings = settings,
-                                status = status,
-                                motion = motionAllowed(),
-                                onChange = {
-                                    settings = it
-                                    latest = it
-                                    store.save(it)
-                                },
-                                onPair = { askToPair() },
-                                onDone = {
-                                    store.markSetupDone()
-                                    phase = Phase.App
-                                },
-                            )
-                            Phase.App -> AppShell(
-                                settings = settings,
-                                status = status,
-                                motion = motionAllowed(),
-                                crashReports = crashReports,
-                                onChange = {
-                                    settings = it
-                                    latest = it
-                                    store.save(it)
-                                },
-                                onPair = { askToPair() },
-                                onCrashReports = { enabled ->
-                                    if (store.setCrashReportsEnabled(enabled)) {
-                                        crashReports = enabled
-                                        if (enabled) CrashReports.start(this@MainActivity)
-                                        else CrashReports.stop()
-                                    }
-                                },
-                                includeIp = includeIp,
-                                onIncludeIp = { include ->
-                                    if (store.setCrashReportsIncludeIp(include)) includeIp = include
-                                },
-                                onSendTestError = { CrashReports.sendTestError() },
-                            )
-                        }
+            var occasions by remember { mutableStateOf(store.enabledOccasions()) }
+            val scope = rememberCoroutineScope()
+            val updates = remember { UpdateController(applicationContext, scope, store.updateCheckOnLaunch()) }
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner, updates) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) updates.resumeInstall()
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+            }
+            LaunchedEffect(phase) {
+                if (phase == Phase.App && updates.checkOnLaunch) updates.check(manual = false)
+            }
+            BrandTheme(dark = dark, accent = pebbleColor(settings.colour)) {
+                Surface(Modifier.fillMaxSize().imePadding(), color = PebblesBrand.current.bg) {
+                    when (phase) {
+                        Phase.Intro -> Box(Modifier.safeDrawingPadding()) { IntroScreen(
+                            colour = pebbleColor(settings.colour),
+                            motion = motionAllowed(),
+                            onDone = {
+                                store.markIntroSeen()
+                                phase = Phase.Setup
+                            },
+                        ) }
+                        Phase.Setup -> Box(Modifier.safeDrawingPadding()) { SetupScreen(
+                            settings = settings,
+                            status = status,
+                            motion = motionAllowed(),
+                            onChange = {
+                                settings = it
+                                latest = it
+                                store.save(it)
+                            },
+                            onPair = { askToPair() },
+                            onDone = {
+                                store.markSetupDone()
+                                phase = Phase.App
+                            },
+                        ) }
+                        Phase.App -> AppNav(
+                            settings = settings,
+                            status = status,
+                            motion = motionAllowed(),
+                            crashReports = crashReports,
+                            includeIp = includeIp,
+                            occasions = occasions,
+                            updates = updates,
+                            onChange = {
+                                settings = it
+                                latest = it
+                                store.save(it)
+                            },
+                            onPair = { askToPair() },
+                            onCrashReports = { enabled ->
+                                if (store.setCrashReportsEnabled(enabled)) {
+                                    crashReports = enabled
+                                    if (enabled) CrashReports.start(this@MainActivity)
+                                    else CrashReports.stop()
+                                }
+                            },
+                            onIncludeIp = { include ->
+                                if (store.setCrashReportsIncludeIp(include)) includeIp = include
+                            },
+                            onOccasion = { occasion, enabled ->
+                                store.setOccasionEnabled(occasion.id, enabled)
+                                occasions = store.enabledOccasions()
+                            },
+                            onQuietUpdates = { enabled ->
+                                store.setUpdateCheckOnLaunch(enabled)
+                                updates.checkOnLaunch = enabled
+                            },
+                            onSendTestError = { CrashReports.sendTestError() },
+                        )
                     }
                 }
             }
         }
+    }
 
     override fun onDestroy() {
         pairer.close()

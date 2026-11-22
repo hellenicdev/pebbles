@@ -37,8 +37,11 @@ android {
         applicationId = "eu.hellenicdev.pebbles"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0"
+        val requestedVersion = (findProperty("versionName") as? String)?.trim()?.takeIf { it.isNotEmpty() }
+        versionName = requestedVersion ?: "0.4.0"
+        // The default code stays 4. A release build can pass -PversionName=0.5.0
+        // and the code becomes major*10000 + minor*100 + patch, so an update installs.
+        versionCode = if (requestedVersion == null) 4 else semverCode(requestedVersion)
         buildConfigField("String", "SENTRY_DSN", javaStringLiteral(sentryDsn))
     }
 
@@ -108,16 +111,28 @@ sentry {
     }
 }
 
+fun semverCode(name: String): Int {
+    val parts = name.removePrefix("v").substringBefore("-").split(".")
+    val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+    return major * 10_000 + minor * 100 + patch
+}
+
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("io.sentry:sentry-android:8.65.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
