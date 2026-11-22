@@ -384,7 +384,7 @@ fun UpdatesPage(controller: UpdateController, onQuietChange: (Boolean) -> Unit) 
             UpdatePhase.Current -> Text("This is the newest version.", style = Type.body, color = brand.ink)
             is UpdatePhase.Failed -> Text(phase.message, style = Type.body, color = brand.ink)
             is UpdatePhase.MissingAsset -> Text(
-                "Version ${phase.version} is published, without a ${phase.expectedName} file.",
+                "This release is still being built, check again in a few minutes",
                 style = Type.body,
                 color = brand.ink,
             )

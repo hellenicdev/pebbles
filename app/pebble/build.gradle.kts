@@ -38,7 +38,7 @@ android {
         minSdk = 26
         targetSdk = 35
         val requestedVersion = (findProperty("versionName") as? String)?.trim()?.takeIf { it.isNotEmpty() }
-        val appVersion = requestedVersion ?: "0.6.0"
+        val appVersion = requestedVersion ?: "0.6.1"
         versionName = appVersion
         // major*10000 + minor*100 + patch, so a newer release can install over this one.
         versionCode = semverCode(appVersion)
@@ -136,4 +136,6 @@ dependencies {
     implementation("io.sentry:sentry-android:8.65.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
+    // Android's android.jar stubs org.json. Unit tests need the real parser.
+    testImplementation("org.json:json:20260814")
 }

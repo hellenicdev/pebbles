@@ -37,6 +37,48 @@ class AppUpdateTest {
     }
 
     @Test
+    fun githubReleaseWithNestedUploaderFindsTheApk() {
+        val json = """
+            {
+              "url": "https://api.github.com/repos/hellenicdev/pebbles/releases/1",
+              "tag_name": "v0.6.0",
+              "name": "0.6.0",
+              "body": "Groups and invites.\n",
+              "draft": false,
+              "author": {
+                "login": "hellenicdev",
+                "tag_name": "not-the-release",
+                "body": "not the notes"
+              },
+              "assets": [
+                {
+                  "url": "https://api.github.com/repos/hellenicdev/pebbles/releases/assets/1",
+                  "name": "pebbles-0.6.0.apk",
+                  "content_type": "application/vnd.android.package-archive",
+                  "state": "uploaded",
+                  "size": 12345678,
+                  "uploader": {
+                    "login": "hellenicdev",
+                    "id": 205357183,
+                    "name": "HellenicDev",
+                    "url": "https://api.github.com/users/hellenicdev"
+                  },
+                  "browser_download_url": "https://github.com/hellenicdev/pebbles/releases/download/v0.6.0/pebbles-0.6.0.apk"
+                }
+              ]
+            }
+        """.trimIndent()
+        val lookup = interpretRelease(json, "0.5.0") as UpdateLookup.Available
+        assertEquals("0.6.0", lookup.version)
+        assertEquals("Groups and invites.", lookup.notes)
+        assertEquals(
+            "https://github.com/hellenicdev/pebbles/releases/download/v0.6.0/pebbles-0.6.0.apk",
+            lookup.apkUrl,
+        )
+        assertEquals("pebbles-0.6.0.apk", lookup.apkName)
+    }
+
+    @Test
     fun currentAndMissingAsset() {
         val current = """{"tag_name":"v0.4.0","body":"Same","assets":[]}"""
         assertTrue(interpretRelease(current, "0.4.0") is UpdateLookup.Current)
