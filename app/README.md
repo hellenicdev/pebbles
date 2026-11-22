@@ -78,3 +78,9 @@ The updater installs one asset, named `pebbles-<version>.apk`. For version 0.5.0
 Android only installs the new APK when it is signed with the same key as the app already on the phone. A debug build cannot update to a release build. The release build's `versionCode` must also be higher. `./gradlew :pebble:assembleRelease -PversionName=0.5.0` sets both the name and a matching code.
 
 When a GitHub release is published, `.github/workflows/release-apk.yml` can build that APK and attach it under the expected name. It does this only when the repository secrets `PEBBLES_STORE_BASE64`, `PEBBLES_STORE_PASSWORD`, `PEBBLES_KEY_ALIAS`, and `PEBBLES_KEY_PASSWORD` are set. `PEBBLES_STORE_BASE64` is the release keystore, base64-encoded. Without those secrets the workflow still succeeds and attaches nothing.
+
+The same workflow writes a build provenance attestation for that APK, and only when the APK was actually built. After you download `pebbles-<version>.apk`, check that GitHub signed the build:
+
+```sh
+gh attestation verify pebbles-<version>.apk -R hellenicdev/pebbles
+```
