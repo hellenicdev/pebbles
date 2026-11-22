@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -45,11 +47,16 @@ internal sealed interface UpdateLookup {
 }
 
 internal fun interpretRelease(json: String, currentVersion: String): UpdateLookup {
-    val version = jsonString(json, "tag_name").trim().removePrefix("v").substringBefore("-")
-    val notes = jsonString(json, "body").trim().ifBlank { "No notes with this release." }
+    val release = try {
+        JSONObject(json)
+    } catch (_: JSONException) {
+        return UpdateLookup.Current
+    }
+    val version = release.optString("tag_name").trim().removePrefix("v").substringBefore("-")
+    val notes = release.optString("body").trim().ifBlank { "No notes with this release." }
     if (!isNewerVersion(version, currentVersion)) return UpdateLookup.Current
     val expected = assetNameFor(version)
-    val url = assetUrl(json, expected)
+    val url = assetUrl(release, expected)
     return if (url.isBlank()) {
         UpdateLookup.MissingAsset(version, notes, expected)
     } else {
@@ -57,68 +64,13 @@ internal fun interpretRelease(json: String, currentVersion: String): UpdateLooku
     }
 }
 
-private fun jsonString(json: String, key: String): String {
-    val marker = "\"$key\""
-    val keyAt = json.indexOf(marker)
-    if (keyAt < 0) return ""
-    var index = json.indexOf(':', keyAt + marker.length)
-    if (index < 0) return ""
-    index++
-    while (index < json.length && json[index].isWhitespace()) index++
-    if (index >= json.length || json[index] != '"') return ""
-    return readJsonString(json, index)
-}
-
-private fun readJsonString(json: String, openingQuote: Int): String {
-    val out = StringBuilder()
-    var index = openingQuote + 1
-    while (index < json.length) {
-        val char = json[index]
-        if (char == '\\' && index + 1 < json.length) {
-            when (val escaped = json[index + 1]) {
-                'n' -> out.append('\n')
-                'r' -> out.append('\r')
-                't' -> out.append('\t')
-                '"' -> out.append('"')
-                '\\' -> out.append('\\')
-                else -> out.append(escaped)
-            }
-            index += 2
-            continue
+private fun assetUrl(release: JSONObject, expectedName: String): String {
+    val assets = release.optJSONArray("assets") ?: return ""
+    for (index in 0 until assets.length()) {
+        val asset = assets.optJSONObject(index) ?: continue
+        if (asset.optString("name").equals(expectedName, ignoreCase = true)) {
+            return asset.optString("browser_download_url")
         }
-        if (char == '"') return out.toString()
-        out.append(char)
-        index++
-    }
-    return out.toString()
-}
-
-private fun assetUrl(json: String, expectedName: String): String {
-    val assetsAt = json.indexOf("\"assets\"")
-    if (assetsAt < 0) return ""
-    val arrayStart = json.indexOf('[', assetsAt)
-    if (arrayStart < 0) return ""
-    var index = arrayStart
-    var depth = 0
-    var objectStart = -1
-    while (index < json.length) {
-        when (json[index]) {
-            '[' -> depth++
-            ']' -> {
-                depth--
-                if (depth == 0) return ""
-            }
-            '{' -> if (depth == 1 && objectStart < 0) objectStart = index
-            '}' -> if (depth == 1 && objectStart >= 0) {
-                val objectJson = json.substring(objectStart, index + 1)
-                val name = jsonString(objectJson, "name")
-                if (name.equals(expectedName, ignoreCase = true)) {
-                    return jsonString(objectJson, "browser_download_url")
-                }
-                objectStart = -1
-            }
-        }
-        index++
     }
     return ""
 }
