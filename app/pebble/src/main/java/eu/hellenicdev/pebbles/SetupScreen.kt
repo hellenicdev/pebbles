@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 
 private val setupTitles = listOf(
     "Your colour" to "This is the glow they see.",
-    "Your group" to "Add the people in this group. One is enough. Five is the most.",
+    "Your name" to "This is the name people in your group see. Invite them with a link afterwards.",
     "Quiet hours" to "UTC. Between these hours it stays still.",
     "Wi-Fi" to "Up to five networks. It joins the first one when you pair.",
     "Pair" to "Keep the pebble nearby. This sends the settings across.",
@@ -99,7 +99,11 @@ fun SetupScreen(
                                 0 -> ColourChoices(settings.colourName) { name, value ->
                                     onChange(settings.copy(colourName = name, colour = value))
                                 }
-                                1 -> PeopleEditor(settings.names) { onChange(settings.copy(names = it)) }
+                                1 -> BrandField(
+                                    settings.yourName,
+                                    { onChange(settings.copy(yourName = it.take(32))) },
+                                    "Your name",
+                                )
                                 2 -> QuietStep(settings, onChange)
                                 3 -> WifiStep(settings, onChange)
                                 else -> PairStep(status, onPair)

@@ -15,11 +15,22 @@ enum class Occasion(val id: String, val title: String, val line: String) {
 data class PebbleSettings(
     val colourName: String,
     val colour: Long,
+    val yourName: String,
     val names: List<String>,
     val quietStart: Int,
     val quietEnd: Int,
     val networks: List<WifiNetwork>,
 )
+
+data class GroupMember(
+    val id: String,
+    val name: String,
+    val colourName: String,
+    val colour: Long,
+    val you: Boolean,
+)
+
+data class GroupInviteLink(val code: String, val url: String, val expiresAt: Long)
 
 object Colours {
     val choices = listOf(
@@ -47,6 +58,7 @@ class SettingsStore(context: Context) {
         return PebbleSettings(
             colourName = colourName,
             colour = colour,
+            yourName = prefs.getString("your_name", "") ?: "",
             names = names,
             quietStart = prefs.getInt("quiet_start", 22),
             quietEnd = prefs.getInt("quiet_end", 7),
@@ -62,6 +74,7 @@ class SettingsStore(context: Context) {
         val people = settings.names.take(5)
         val editor = prefs.edit()
             .putString("colour_name", settings.colourName)
+            .putString("your_name", settings.yourName.trim().take(32))
             .putInt("quiet_start", settings.quietStart)
             .putInt("quiet_end", settings.quietEnd)
             .putString("wifi", wifi.toString())
@@ -122,9 +135,29 @@ class SettingsStore(context: Context) {
         prefs.edit().putBoolean(UPDATE_CHECK, enabled).apply()
     }
 
+    fun deviceToken(): String {
+        val existing = prefs.getString(DEVICE_TOKEN, null)
+        if (!existing.isNullOrBlank()) return existing
+        val bytes = ByteArray(32)
+        java.security.SecureRandom().nextBytes(bytes)
+        val token = bytes.joinToString("") { "%02x".format(it) }
+        prefs.edit().putString(DEVICE_TOKEN, token).apply()
+        return token
+    }
+
+    fun pendingInvite(): String? = prefs.getString(PENDING_INVITE, null)?.takeIf { it.isNotBlank() }
+
+    fun setPendingInvite(code: String?) {
+        val editor = prefs.edit()
+        if (code.isNullOrBlank()) editor.remove(PENDING_INVITE) else editor.putString(PENDING_INVITE, code)
+        editor.apply()
+    }
+
     private companion object {
         const val CRASH_REPORTS = "crash_reports"
         const val CRASH_REPORTS_INCLUDE_IP = "crash_reports_include_ip"
         const val UPDATE_CHECK = "update_check_on_launch"
+        const val DEVICE_TOKEN = "device_token"
+        const val PENDING_INVITE = "pending_invite"
     }
 }

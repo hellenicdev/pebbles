@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -48,6 +49,8 @@ object Routes {
     const val Pebble = "settings/pebble"
     const val Reports = "settings/reports"
     const val Updates = "settings/updates"
+    const val Support = "settings/support"
+    const val Join = "join"
 }
 
 private val titles = mapOf(
@@ -59,6 +62,7 @@ private val titles = mapOf(
     Routes.Pebble to "Battery and pairing",
     Routes.Reports to "Crash reports",
     Routes.Updates to "App updates",
+    Routes.Join to "Join",
 )
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -71,6 +75,9 @@ fun AppNav(
     includeIp: Boolean,
     occasions: Set<String>,
     updates: UpdateController,
+    group: GroupController,
+    onShare: (String) -> Unit,
+    onSupport: () -> Unit,
     onChange: (PebbleSettings) -> Unit,
     onPair: () -> Unit,
     onCrashReports: (Boolean) -> Unit,
@@ -83,6 +90,11 @@ fun AppNav(
     val backStack by navController.currentBackStackEntryAsState()
     val route = backStack?.destination?.route ?: Routes.Home
     val topLevel = route == Routes.Home || route == Routes.Settings
+    LaunchedEffect(group.inviteCode) {
+        if (!group.inviteCode.isNullOrBlank() && route != Routes.Join) {
+            navController.navigate(Routes.Join) { launchSingleTop = true }
+        }
+    }
     SharedTransitionLayout {
         val sharedScope = this
         Scaffold(
@@ -145,7 +157,19 @@ fun AppNav(
                     )
                 }
                 page(Routes.Home) {
-                    HomeScreen(settings, status, motion, occasions, sharedScope, this)
+                    HomeScreen(
+                        settings = settings,
+                        status = status,
+                        motion = motion,
+                        occasions = occasions,
+                        members = group.snapshot.members,
+                        loading = group.loading,
+                        canInvite = group.snapshot.youAreOwner || group.snapshot.members.isEmpty(),
+                        onRefresh = { group.refresh() },
+                        onInvite = { navController.navigate(Routes.Group) },
+                        sharedScope = sharedScope,
+                        visibilityScope = this,
+                    )
                 }
                 page(Routes.Settings) {
                     SettingsHub(
@@ -154,7 +178,9 @@ fun AppNav(
                         occasions = occasions,
                         networkCount = settings.networks.size,
                         updateReady = updates.updateReady,
-                        onOpen = { navController.navigate(it) },
+                        onOpen = { route ->
+                            if (route == Routes.Support) onSupport() else navController.navigate(route)
+                        },
                         onSendTestError = onSendTestError,
                     )
                 }
@@ -162,7 +188,12 @@ fun AppNav(
                     ColourPage(settings, motion, sharedScope, this, onChange)
                 }
                 page(Routes.Quiet) { QuietPage(settings, onChange) }
-                page(Routes.Group) { GroupPage(settings, onChange) }
+                page(Routes.Group) {
+                    GroupPage(settings, group, onName = { onChange(settings.copy(yourName = it)) }, onShare)
+                }
+                page(Routes.Join) {
+                    JoinPage(settings.yourName, group.message, group.loading, { group.accept() }, { group.dismissInvite(); navController.popBackStack() })
+                }
                 page(Routes.Wifi) { WifiPage(settings, onChange) }
                 page(Routes.Occasions) { OccasionPage(occasions, onOccasion) }
                 page(Routes.Pebble) { PebbleCarePage(status, onPair) }

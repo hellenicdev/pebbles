@@ -38,7 +38,7 @@ android {
         minSdk = 26
         targetSdk = 35
         val requestedVersion = (findProperty("versionName") as? String)?.trim()?.takeIf { it.isNotEmpty() }
-        val appVersion = requestedVersion ?: "0.5.0"
+        val appVersion = requestedVersion ?: "0.6.0"
         versionName = appVersion
         // major*10000 + minor*100 + patch, so a newer release can install over this one.
         versionCode = semverCode(appVersion)

@@ -1,6 +1,8 @@
 package eu.hellenicdev.pebbles
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -35,6 +37,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  */
 class MainActivity : ComponentActivity() {
     private val statusState = mutableStateOf("Not paired yet.")
+    private val inviteState = mutableStateOf<String?>(null)
     private lateinit var latest: PebbleSettings
     private lateinit var pairer: PebblePairer
     private val permissions = registerForActivityResult(
@@ -49,6 +52,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val store = SettingsStore(this)
         latest = store.load()
+        inviteState.value = inviteCodeFrom(intent?.data) ?: store.pendingInvite()
+        store.setPendingInvite(inviteState.value)
         pairer = PebblePairer(this) { message -> runOnUiThread { statusState.value = message } }
         val start = when {
             store.setupDone() -> Phase.App
@@ -65,6 +70,15 @@ class MainActivity : ComponentActivity() {
             var occasions by remember { mutableStateOf(store.enabledOccasions()) }
             val scope = rememberCoroutineScope()
             val updates = remember { UpdateController(applicationContext, scope, store.updateCheckOnLaunch()) }
+            val incoming by inviteState
+            val group = remember {
+                GroupController(store, scope) { names ->
+                    val next = store.load().copy(names = names)
+                    store.save(next)
+                    latest = next
+                    settings = next
+                }
+            }
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner, updates) {
                 val observer = LifecycleEventObserver { _, event ->
@@ -73,8 +87,12 @@ class MainActivity : ComponentActivity() {
                 lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
+            LaunchedEffect(incoming) { incoming?.let { group.noteInvite(it) } }
             LaunchedEffect(phase) {
-                if (phase == Phase.App && updates.checkOnLaunch) updates.check(manual = false)
+                if (phase == Phase.App) {
+                    if (updates.checkOnLaunch) updates.check(manual = false)
+                    group.refresh()
+                }
             }
             BrandTheme(dark = dark, accent = pebbleColor(settings.colour)) {
                 Surface(Modifier.fillMaxSize().imePadding(), color = PebblesBrand.current.bg) {
@@ -135,11 +153,22 @@ class MainActivity : ComponentActivity() {
                                 updates.checkOnLaunch = enabled
                             },
                             onSendTestError = { CrashReports.sendTestError() },
+                            group = group,
+                            onShare = { shareInvite(it) },
+                            onSupport = { openSupport() },
                         )
                     }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val code = inviteCodeFrom(intent.data) ?: return
+        inviteState.value = code
+        SettingsStore(this).setPendingInvite(code)
     }
 
     override fun onDestroy() {
@@ -155,6 +184,31 @@ class MainActivity : ComponentActivity() {
         }
         permissions.launch(needed)
     }
+
+    private fun shareInvite(url: String) {
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, "Join my Pebbles group: $url")
+        }
+        startActivity(Intent.createChooser(send, "Invite"))
+    }
+
+    private fun openSupport() {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/hellenicdev")))
+    }
+}
+
+internal fun inviteCodeFrom(uri: Uri?): String? {
+    if (uri == null) return null
+    if (uri.scheme == "pebbles" && uri.host == "join") {
+        return uri.path?.trim('/')?.takeIf { it.isNotBlank() }
+    }
+    val path = uri.path ?: return null
+    if (uri.scheme == "https" && uri.host == "hellenicdev.eu" && path.startsWith("/pebbles/join/")) {
+        return uri.lastPathSegment?.takeIf { it.isNotBlank() && it != "join" }
+    }
+    if (path.endsWith("/join.html")) return uri.getQueryParameter("code")?.takeIf { it.isNotBlank() }
+    return null
 }
 
 private enum class Phase { Intro, Setup, App }

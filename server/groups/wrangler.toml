@@ -1,0 +1,17 @@
+name = "pebbles-groups"
+main = "src/index.ts"
+compatibility_date = "2026-11-14"
+account_id = "327471fb378c74033d037887e0d4cf01"
+workers_dev = true
+
+# Replace database_id after `npx wrangler d1 create pebbles-groups`.
+# The all-zero id means the database does not exist yet, and deploy skips it.
+[[d1_databases]]
+binding = "DB"
+database_name = "pebbles-groups"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Zone route only. Deploy does not create DNS records.
+[[routes]]
+pattern = "api.hellenicdev.eu/v1*"
+zone_name = "hellenicdev.eu"
