@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Open Pebbles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="wrap page">
+    <h1>Open this invite in the Pebbles app</h1>
+    <p id="line">If the app is installed, it can take you into the group.</p>
+    <p><a id="open" href="pebbles://join/">Open the app</a></p>
+  </main>
+  <script>
+    (function () {
+      var path = location.pathname;
+      var match = path.match(/\/join\/([A-Za-z0-9]+)/);
+      var code = match ? match[1] : "";
+      if (!code) return;
+      var app = "pebbles://join/" + code;
+      document.getElementById("open").href = app;
+      document.getElementById("line").textContent = "Invite " + code + ". It expires after seven days.";
+    })();
+  </script>
+</body>
+</html>

@@ -37,6 +37,11 @@ fun HomeScreen(
     status: String,
     motion: Boolean,
     occasions: Set<String>,
+    members: List<GroupMember>,
+    loading: Boolean,
+    canInvite: Boolean,
+    onRefresh: () -> Unit,
+    onInvite: () -> Unit,
     sharedScope: SharedTransitionScope,
     visibilityScope: AnimatedVisibilityScope,
 ) {
@@ -59,7 +64,7 @@ fun HomeScreen(
             Text("Your pebble", style = Type.display, color = brand.ink)
             Spacer(Modifier.height(4.dp))
             Text(
-                homeStatus(settings, status, quiet),
+                pebbleStatusLine(settings.colourName, status),
                 style = Type.body,
                 color = brand.inkSoft,
             )
@@ -74,26 +79,31 @@ fun HomeScreen(
             )
             Text("People", style = Type.title, color = brand.ink)
             Spacer(Modifier.height(8.dp))
-            val people = settings.names.map { it.trim() }.filter { it.isNotEmpty() }
-            if (people.isEmpty()) {
+            if (loading && members.isEmpty()) {
+                SkeletonCard()
+            } else if (members.none { !it.you }) {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
                     color = brand.elev,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { contentDescription = "No one in this group yet. Add people in Settings." },
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("No one in this group yet.", style = Type.body, color = brand.ink)
-                        Text("Add people in Settings.", style = Type.body, color = brand.inkSoft)
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("No one else in this group yet.", style = Type.body, color = brand.ink)
+                        Text("Invite someone with a link. They join with their own name and colour.", style = Type.body, color = brand.inkSoft)
+                        if (canInvite) {
+                            BrandButton("Invite", onClick = onInvite, modifier = Modifier.fillMaxWidth())
+                        }
                     }
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    people.forEach { name ->
-                        PersonRow(name, pebbleColor(settings.colour), personState(quiet, occasions))
+                    members.filter { !it.you }.forEach { member ->
+                        PersonRow(member.name, pebbleColor(member.colour), member.colourName)
                     }
                 }
+            }
+            if (!loading) {
+                BrandQuiet("Refresh", onClick = onRefresh)
             }
             Spacer(Modifier.height(22.dp))
             Text("Recent", style = Type.title, color = brand.ink)
@@ -161,18 +171,13 @@ private fun PersonRow(name: String, colour: Color, state: String) {
     }
 }
 
-private fun homeStatus(settings: PebbleSettings, status: String, quiet: Boolean): String {
-    val hours = if (quiet) "Quiet" else "Awake"
-    return "${settings.colourName} · $hours · $status"
+private fun pebbleStatusLine(colourName: String, pairStatus: String): String {
+    val link = if (pairStatus == "Not paired yet.") "No pebble paired yet" else pairStatus
+    return "$colourName · $link"
 }
 
-private fun personState(quiet: Boolean, occasions: Set<String>): String {
-    val glow = when {
-        Occasion.Birthday.id in occasions -> "Birthday glow"
-        Occasion.Anniversary.id in occasions -> "Anniversary glow"
-        Occasion.QuietDay.id in occasions -> "Kept quiet"
-        else -> null
-    }
-    val base = if (quiet) "Quiet" else "Awake"
-    return if (glow == null) base else "$base · $glow"
+@Composable
+private fun SkeletonCard() {
+    val brand = PebblesBrand.current
+    Surface(shape = RoundedCornerShape(24.dp), color = brand.line.copy(alpha = 0.45f), modifier = Modifier.fillMaxWidth().height(72.dp)) {}
 }

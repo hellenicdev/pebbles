@@ -58,14 +58,15 @@ fun SettingsHub(
         SettingRow("Quiet hours", quietLine(settings.quietStart, settings.quietEnd)) { onOpen(Routes.Quiet) }
         SettingRow("Battery and pairing", "Charge on the dock. Pair from here.") { onOpen(Routes.Pebble) }
         SectionLabel("Group")
-        val people = settings.names.count { it.isNotBlank() }
-        SettingRow("People", "$people of 5") { onOpen(Routes.Group) }
+        SettingRow("People", "Invite with a link") { onOpen(Routes.Group) }
         SettingRow("Occasion glows", if (occasions.isEmpty()) "Off" else "${occasions.size} on") { onOpen(Routes.Occasions) }
         SectionLabel("Connection")
         SettingRow("Wi-Fi", if (networkCount == 0) "None saved" else "$networkCount saved") { onOpen(Routes.Wifi) }
         SectionLabel("This phone")
         SettingRow("Crash reports", if (crashReports) "On" else "Off") { onOpen(Routes.Reports) }
         SettingRow("App updates", "Version ${BuildConfig.VERSION_NAME}") { onOpen(Routes.Updates) }
+        SectionLabel("About")
+        SettingRow("Support Pebbles on Ko-fi", "ko-fi.com/hellenicdev") { onOpen(Routes.Support) }
         if (BuildConfig.DEBUG) {
             SectionLabel("Debug")
             DebugTestError(crashReports, onSendTestError)
@@ -153,11 +154,55 @@ fun QuietPage(settings: PebbleSettings, onChange: (PebbleSettings) -> Unit) {
 }
 
 @Composable
-fun GroupPage(settings: PebbleSettings, onChange: (PebbleSettings) -> Unit) {
+fun GroupPage(
+    settings: PebbleSettings,
+    group: GroupController,
+    onName: (String) -> Unit,
+    onShare: (String) -> Unit,
+) {
+    val brand = PebblesBrand.current
+    val others = group.snapshot.members.filter { !it.you }
+    PageColumn {
+        Text("Your name is what the others see. Five people is the most.", style = Type.body, color = brand.inkSoft)
+        BrandField(settings.yourName, { onName(it.take(32)) }, "Your name")
+        if (group.loading && group.snapshot.members.isEmpty()) {
+            Surface(shape = RoundedCornerShape(22.dp), color = brand.line.copy(alpha = 0.45f), modifier = Modifier.fillMaxWidth().height(72.dp)) {}
+        }
+        group.message?.let { Text(it, style = Type.body, color = brand.ink) }
+        if (others.isEmpty() && !group.loading) {
+            Text("No one else yet.", style = Type.body, color = brand.ink)
+        }
+        others.forEach { member ->
+            Text("${member.name} · ${member.colourName}", style = Type.body, color = brand.ink)
+        }
+        if (group.snapshot.youAreOwner || group.snapshot.members.isEmpty()) {
+            BrandButton(
+                "Invite",
+                enabled = !group.loading && settings.yourName.isNotBlank(),
+                onClick = { group.invite(onShare) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        group.snapshot.invites.forEach { invite ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(invite.code, style = Type.body, color = brand.inkSoft, modifier = Modifier.weight(1f))
+                if (group.snapshot.youAreOwner) BrandQuiet("Revoke", onClick = { group.revoke(invite.code) })
+            }
+        }
+        BrandQuiet("Refresh", onClick = { group.refresh() })
+    }
+}
+
+@Composable
+fun JoinPage(name: String, message: String?, loading: Boolean, onJoin: () -> Unit, onDismiss: () -> Unit) {
     val brand = PebblesBrand.current
     PageColumn {
-        Text("Add the people in this group. One is enough. Five is the most.", style = Type.body, color = brand.inkSoft)
-        PeopleEditor(settings.names) { onChange(settings.copy(names = it)) }
+        Text("Join a group", style = Type.title, color = brand.ink)
+        Text("You'll join with the name and colour already on this phone.", style = Type.body, color = brand.inkSoft)
+        Text(if (name.isBlank()) "Add your name in Settings first." else name, style = Type.body, color = brand.ink)
+        message?.let { Text(it, style = Type.body, color = brand.ink) }
+        BrandButton("Join", enabled = !loading && name.isNotBlank(), onClick = onJoin, modifier = Modifier.fillMaxWidth())
+        BrandQuiet("Not now", onClick = onDismiss)
     }
 }
 
