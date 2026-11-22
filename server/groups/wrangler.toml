@@ -9,7 +9,7 @@ workers_dev = true
 [[d1_databases]]
 binding = "DB"
 database_name = "pebbles-groups"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "972a1639-417a-4c0b-afba-ceb59f612f4b"
 
 # Zone route only. Deploy does not create DNS records.
 [[routes]]
